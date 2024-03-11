@@ -11,6 +11,12 @@ public class Health : MonoBehaviour
     [SerializeField] private Slider slider;
     [SerializeField] private Image fill;
 
+    private EnemySpawner spawner;
+    private Rigidbody rb;
+
+    private PlayerController playerController;
+    private Health playerHealth;
+    private Souls playerSouls;
     #endregion
 
     //
@@ -22,11 +28,7 @@ public class Health : MonoBehaviour
     [SerializeField] private float startingHealth;
 
     [HideInInspector] public float currentHealth;
-    [HideInInspector] public bool invulnerable;
-
-    private EnemySpawner spawner;
-    private Rigidbody rb;
-    private Health playerHealth;
+    [HideInInspector] public bool invincible;
 
     #endregion
 
@@ -36,8 +38,9 @@ public class Health : MonoBehaviour
 
     [Header("Stance: Vampire")]
     [SerializeField] private float bleedIntervals;
+
     private Coroutine currentCoroutine;
-    private float bleedDuration = 5;
+    private bool vampireCursed;
     private bool isBleeding;
 
     #endregion
@@ -48,6 +51,8 @@ public class Health : MonoBehaviour
 
     [Header("Stance: Orc")]
     [SerializeField] private LayerMask collidesWith;
+    [SerializeField] private float knockBackDuration;
+
     private float knockBackDamage;
     private bool knockedBack;
 
@@ -55,18 +60,15 @@ public class Health : MonoBehaviour
 
     //
 
-    #region General
+    #region Ghost Stance
 
-    private void Awake()
-    {
-        // Set up some references (Enemies only)
-        if (gameObject.CompareTag("Enemy"))
-        {
-            spawner = GetComponentInParent<EnemySpawner>();
-            rb = GetComponent<Rigidbody>(); 
-            playerHealth = spawner.playerHealth;
-        }
-    }
+    private float damageModifier = 1f;
+
+    #endregion
+
+    //
+
+    #region General
 
     private void Start()
     {
@@ -74,6 +76,16 @@ public class Health : MonoBehaviour
         currentHealth = startingHealth;
 
         SetMaxHealth();
+
+        // Set up some references (Enemies only)
+        if (gameObject.CompareTag("Enemy"))
+        {
+            spawner = GetComponentInParent<EnemySpawner>();
+            rb = GetComponent<Rigidbody>();
+            playerController = spawner.playerController;
+            playerHealth = spawner.playerHealth;
+            playerSouls = spawner.playerSouls;
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -82,7 +94,10 @@ public class Health : MonoBehaviour
         if (gameObject.CompareTag("Enemy") && knockedBack)
         {
             // Check if the collider is in the collidesWith layermask
-            // ...
+            if ((collidesWith & (1 << collision.gameObject.layer)) != 0)
+            {
+                Damage(knockBackDamage);
+            }
         }
     }
 
@@ -126,18 +141,17 @@ public class Health : MonoBehaviour
 
     public void Damage(float amount)
     {
-        // Check if the enemy is invulnerable
-        if (!invulnerable)
-        {
-            Debug.Log(gameObject.name + " took " + amount + " damage.");
+        // Check if the player is invulnerable
+        if (invincible) return;
 
-            // Modify health and handle out of bounds input
-            currentHealth -= amount;
-            if (currentHealth <= 0) Die();
+        Debug.Log(gameObject.name + " took " + amount * damageModifier + " damage.");
 
-            // Update the UI
-            SetCurrentHealth();
-        }
+        // Modify health according to amount and the damage modifier and handle out of bounds input
+        currentHealth -= amount * damageModifier;
+        if (currentHealth <= 0) Die();
+
+        // Update the UI
+        SetCurrentHealth();
     }
 
 
@@ -147,23 +161,35 @@ public class Health : MonoBehaviour
 
     #region Vampire Stance
 
-    public void Bleed(float damage, int severity)
+    public void Bleed(float damage, float duration, bool isSpecial)
+    {
+        if (isSpecial)
+        {
+            SetBleed(damage, duration);
+
+            vampireCursed = true;
+        }
+
+        // Special bleeds cannot be overridden
+        if (vampireCursed) return;
+
+        SetBleed(damage, duration);
+    }
+
+    private void SetBleed(float damage, float duration)
     {
         // If the enemy is not yet bleeding, make him bleed
         if (isBleeding) StopCoroutine(currentCoroutine);
-        currentCoroutine = StartCoroutine(ApplyBleed(damage, severity));
+        currentCoroutine = StartCoroutine(ApplyBleed(damage, duration));
     }
 
-    private IEnumerator ApplyBleed(float initialDamage, int severity)
+    private IEnumerator ApplyBleed(float damage, float duration)
     {
         isBleeding = true;
 
-        // Calculate the final damage
-        float damage = initialDamage * severity;
-
         /* The enemy takes one second of damage for the bleed duration
          * The damage is multiplied by severity */
-        for (int i = 0; i < bleedDuration; i++) 
+        for (int i = 0; i < duration; i++) 
         {
             // Wait for the bleed interval to start damaging the enemy
             yield return new WaitForSeconds(bleedIntervals);
@@ -174,6 +200,15 @@ public class Health : MonoBehaviour
         }
 
         isBleeding = false;
+
+        /* If it was a curse of the vampire, it is now passed
+         * Remove all soul charges from the player
+         * And set specialActive to false */
+        if (vampireCursed)
+        {
+            vampireCursed = false;
+            playerController.SpecialEnd();
+        }
     }
 
     #endregion
@@ -182,27 +217,56 @@ public class Health : MonoBehaviour
 
     #region Orc Stance
 
-    public void KnockBack(float damage, float force)
+    public void KnockBack(float damage, float force, int charges)
     {
+        /* Do not ask what on earth this random calculation is supposed to do.
+         * It just makes the force less exponential and thus, feel better */
+        if (charges > 1) force = force - ((charges - 1) * 8);
+
         // Set the knockBackDamage
         knockBackDamage = damage;
 
+        // The enemy is knocked back
+        knockedBack = true;
+
         // Apply a negative force, to make the enemy fly backwards
         rb.AddForce(transform.forward *  force * -1, ForceMode.Impulse);
+
+        // After a little while, stop the knockBack and reset the variable
+        Invoke(nameof(ResetKnockBack), knockBackDuration * charges);
+    }
+
+    private void ResetKnockBack()
+    {
+        rb.velocity = Vector3.zero;
+        knockedBack = false;
     }
 
     #endregion
 
     // 
 
-    #region Other
+    #region Ghost Stance
 
-    private void Die()
+    public void Marked(float damageIncrease)
     {
-        Destroy(gameObject);
+        damageModifier = 1f + damageIncrease;
+    }
+
+    public void UnMark()
+    {
+        damageModifier = 1f;
     }
 
     #endregion
 
     //
+
+    private void Die()
+    {
+        // If the enemy is marked while it dies, remove it from the list
+        if (damageModifier == 1f) playerController.markedEnemies.Remove(this);
+
+        Destroy(gameObject);
+    }
 }

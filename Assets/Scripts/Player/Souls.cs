@@ -72,8 +72,6 @@ public class Souls : MonoBehaviour
 
     public void GainSouls(int amount)
     {
-        // PROGRAM SOMETHING TO CHECK FOR SPECIAL ACTIVITY IN THE PLAYERCONTROLLER SCRIPT
-
         // Modify souls and handle out of bounds input
         currentSouls += amount;
         if (currentSouls > maxSouls) currentSouls = maxSouls;
