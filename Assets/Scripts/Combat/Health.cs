@@ -7,6 +7,7 @@ public class Health : MonoBehaviour
     #region References
 
     [Header("References")]
+    [SerializeField] private GameObject[] statusIcons;
     [SerializeField] private Gradient gradient;
     [SerializeField] private Slider slider;
     [SerializeField] private Image fill;
@@ -29,6 +30,12 @@ public class Health : MonoBehaviour
 
     [HideInInspector] public float currentHealth;
     [HideInInspector] public bool invincible;
+
+    [Header("UI")]
+    [SerializeField] private float iconOffset;
+
+    private RectTransform rectTransform;
+    private Vector2 defaultPosition;
 
     #endregion
 
@@ -69,6 +76,19 @@ public class Health : MonoBehaviour
     //
 
     #region General
+
+    private void Awake()
+    {
+        // Initially disable all status icons
+        foreach (GameObject icon in statusIcons) icon.SetActive(false);
+
+        // If it is an enemy, retrieve the rectTransform component and store the default position
+        if (gameObject.CompareTag("Enemy"))
+        {
+            rectTransform = statusIcons[0].GetComponent<RectTransform>();
+            defaultPosition = rectTransform.anchoredPosition;
+        }
+    }
 
     private void Start()
     {
@@ -163,16 +183,19 @@ public class Health : MonoBehaviour
 
     public void Bleed(float damage, float duration, bool isSpecial)
     {
+        // If it is a special bleed, set cursed to true
         if (isSpecial)
         {
-            SetBleed(damage, duration);
-
             vampireCursed = true;
+            SetIconActive(1, true);
+            SetBleed(damage, duration);
         }
 
         // Special bleeds cannot be overridden
         if (vampireCursed) return;
 
+        // Set a regular bleed
+        SetIconActive(0, true);
         SetBleed(damage, duration);
     }
 
@@ -196,18 +219,21 @@ public class Health : MonoBehaviour
 
             // Damage the enemy and heal the player
             Damage(damage);
-            playerHealth.Heal(damage);
+            playerHealth.Heal(damage * damageModifier);
         }
 
         isBleeding = false;
 
-        /* If it was a curse of the vampire, it is now passed
-         * Remove all soul charges from the player
-         * And set specialActive to false */
+        // If it was a curse of the vampire, it is now passed. Disable the icon and set the cursed status to false
         if (vampireCursed)
         {
             vampireCursed = false;
-            playerController.SpecialEnd();
+            SetIconActive(1, false);
+        }
+        else
+        {
+            // If it was a regular bleed, set the normal bleed icon to false
+            SetIconActive(0, false);
         }
     }
 
@@ -226,8 +252,9 @@ public class Health : MonoBehaviour
         // Set the knockBackDamage
         knockBackDamage = damage;
 
-        // The enemy is knocked back
+        // The enemy is knocked back. Set the icon
         knockedBack = true;
+        SetIconActive(2, true);
 
         // Apply a negative force, to make the enemy fly backwards
         rb.AddForce(transform.forward *  force * -1, ForceMode.Impulse);
@@ -240,6 +267,7 @@ public class Health : MonoBehaviour
     {
         rb.velocity = Vector3.zero;
         knockedBack = false;
+        SetIconActive(2, false);
     }
 
     #endregion
@@ -250,17 +278,49 @@ public class Health : MonoBehaviour
 
     public void Marked(float damageIncrease)
     {
+        // Make the enemy take more damage and set the status icon active
         damageModifier = 1f + damageIncrease;
+        SetIconActive(3, true);
     }
 
-    public void UnMark()
+    public void RemoveMark()
     {
+        // Reset the damage modifier and set the status icon inactive
         damageModifier = 1f;
+        SetIconActive(3, false);
     }
 
     #endregion
 
     //
+
+    #region Other
+
+    private void SetIconActive(int position, bool active)
+    {
+        // Count how many status icons are active
+        int counter = 0;
+
+        foreach (GameObject icon in statusIcons) if (icon.activeSelf) counter++;
+
+        /* First check if it isn't the same icon being applied (a status was refreshed)
+         * Then check if there is one or more status icons active, adjust the transform position */
+        if (counter > 0 && !statusIcons[position].activeSelf)
+        {
+            // Calculate the total horizontal offset based on the number of active icons
+            float offsetX = counter * iconOffset;
+            // Adjust the position of the current icon based on the offset
+            Vector2 newPosition = rectTransform.anchoredPosition;
+            newPosition.x -= offsetX; 
+            rectTransform.anchoredPosition = newPosition;
+        }
+
+        // Handle status icon logic
+        statusIcons[position].SetActive(active);
+
+        // If the icon is being disabled, reset its position
+        if (!active) rectTransform.anchoredPosition = defaultPosition;
+    }
 
     private void Die()
     {
@@ -269,4 +329,8 @@ public class Health : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    #endregion
+
+    //
 }

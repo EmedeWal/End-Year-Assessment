@@ -400,8 +400,9 @@ public class PlayerController : MonoBehaviour
     {
         specialActive = true;
 
-        // Local variable to keep track of the base amount of bleed ticks for the special
+        // Local variables to keep track of the base amount of bleed ticks for the special
         int baseTicks = 2;
+        float ticks = baseTicks * charges;
 
         // Trigger visuals
         StartCoroutine(VampireSpecialGFX());
@@ -420,9 +421,13 @@ public class PlayerController : MonoBehaviour
                 /* Inflict bleed upon all enemies hit. 
                  * The damage is half as a normal bleed, but the duration depends on charges
                  * Two bleed ticks per charge */
-                eHealth.Bleed(bleedBaseDamage * charges / baseTicks, baseTicks  * charges, true);
+                eHealth.Bleed(bleedBaseDamage * charges / baseTicks, ticks, true);
             }
         }
+
+        /* Regardless of enemies hit, call EndSpecial after the duration
+         * The duration is 0.8 (bleed intervals) * ticks */
+        Invoke(nameof(SpecialEnd), 0.8f * ticks);
     }
 
     private IEnumerator VampireSpecialGFX()
@@ -456,8 +461,11 @@ public class PlayerController : MonoBehaviour
     {
         specialActive = true;
 
+        float specialDuration = orcSpecialDuration * charges;
+
         // Become invulnerable to damage for the duration of the special
-        currentCoroutine = StartCoroutine(Invincible(orcSpecialDuration * charges));
+        currentCoroutine = StartCoroutine(Invincible(specialDuration));
+        Invoke(nameof(SpecialEnd), specialDuration);
     }
 
     private void GhostSpecial(int charges)
@@ -481,7 +489,7 @@ public class PlayerController : MonoBehaviour
         dodgeCooldown += 1 * charges;
 
         // Unmark all enemies in the markedEnemies list
-        foreach (Health eHealth in markedEnemies) eHealth.UnMark();
+        foreach (Health eHealth in markedEnemies) eHealth.RemoveMark();
 
         // Set booleans
         ghostSpecialActive = false;
@@ -538,17 +546,11 @@ public class PlayerController : MonoBehaviour
     {
         // Make the player invincible for the duration
         health.invincible = true;
-
         yield return new WaitForSeconds(duration);
-
         health.invincible = false;
 
-        // If a coroutine is assigned, unassign it and set specialActive to false
-        if (currentCoroutine != null)
-        {
-            SpecialEnd();
-            currentCoroutine = null;
-        }
+        // If a coroutine is assigned, unassign it
+        if (currentCoroutine != null) currentCoroutine = null;
     }
 
     #endregion
@@ -557,13 +559,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // For the attack
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        //// For the attack
+        //Gizmos.color = Color.green;
+        //Gizmos.DrawWireSphere(attackPoint.position, attackRange);
 
-        // For the vampire special
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
-
+        //// For the vampire special
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
     }
 }
