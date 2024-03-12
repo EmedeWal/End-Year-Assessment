@@ -34,9 +34,6 @@ public class Health : MonoBehaviour
     [Header("UI")]
     [SerializeField] private float iconOffset;
 
-    private RectTransform rectTransform;
-    private Vector2 defaultPosition;
-
     #endregion
 
     //
@@ -81,13 +78,6 @@ public class Health : MonoBehaviour
     {
         // Initially disable all status icons
         foreach (GameObject icon in statusIcons) icon.SetActive(false);
-
-        // If it is an enemy, retrieve the rectTransform component and store the default position
-        if (gameObject.CompareTag("Enemy"))
-        {
-            rectTransform = statusIcons[0].GetComponent<RectTransform>();
-            defaultPosition = rectTransform.anchoredPosition;
-        }
     }
 
     private void Start()
@@ -298,28 +288,8 @@ public class Health : MonoBehaviour
 
     private void SetIconActive(int position, bool active)
     {
-        // Count how many status icons are active
-        int counter = 0;
-
-        foreach (GameObject icon in statusIcons) if (icon.activeSelf) counter++;
-
-        /* First check if it isn't the same icon being applied (a status was refreshed)
-         * Then check if there is one or more status icons active, adjust the transform position */
-        if (counter > 0 && !statusIcons[position].activeSelf)
-        {
-            // Calculate the total horizontal offset based on the number of active icons
-            float offsetX = counter * iconOffset;
-            // Adjust the position of the current icon based on the offset
-            Vector2 newPosition = rectTransform.anchoredPosition;
-            newPosition.x -= offsetX; 
-            rectTransform.anchoredPosition = newPosition;
-        }
-
         // Handle status icon logic
         statusIcons[position].SetActive(active);
-
-        // If the icon is being disabled, reset its position
-        if (!active) rectTransform.anchoredPosition = defaultPosition;
     }
 
     private void Die()

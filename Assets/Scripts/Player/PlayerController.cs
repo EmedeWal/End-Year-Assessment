@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,10 +12,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject playerCanvas;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
-
+    
     private Rigidbody rb;
     private Health health;
     private Souls souls;
+
+    [Header("UI")]
+    [SerializeField] private GameObject[] icons;
+    [SerializeField] private float iconOffset;
+
+    private RectTransform rectTransform;
+    private Vector2 defaultPosition;
 
     #endregion
 
@@ -141,6 +147,12 @@ public class PlayerController : MonoBehaviour
 
         // Set objects inactive
         playerCanvas.SetActive(false);
+        
+        // Set all icons to inactive
+        foreach (GameObject icon in icons) icon.SetActive(false);
+
+        rectTransform = icons[0].GetComponent<RectTransform>();
+        defaultPosition = rectTransform.anchoredPosition;
     }
 
     private void Start()
@@ -540,17 +552,38 @@ public class PlayerController : MonoBehaviour
 
     //
 
+    #region Passives
+
+    public void VampireSpecialStack()
+    {
+        SetIconActive(0, true);
+
+        
+    }
+
+    #endregion 
+
+    //
+
     #region Other
 
     private IEnumerator Invincible(float duration)
     {
         // Make the player invincible for the duration
         health.invincible = true;
+        SetIconActive(1, true);
         yield return new WaitForSeconds(duration);
         health.invincible = false;
+        SetIconActive(1, false);
 
         // If a coroutine is assigned, unassign it
         if (currentCoroutine != null) currentCoroutine = null;
+    }
+
+    private void SetIconActive(int position, bool active)
+    {
+        // Handle status icon logic
+        icons[position].SetActive(active);
     }
 
     #endregion
