@@ -31,9 +31,6 @@ public class Health : MonoBehaviour
     [HideInInspector] public float currentHealth;
     [HideInInspector] public bool invincible;
 
-    [Header("UI")]
-    [SerializeField] private float iconOffset;
-
     #endregion
 
     //
@@ -42,9 +39,10 @@ public class Health : MonoBehaviour
 
     [Header("Stance: Vampire")]
     [SerializeField] private float bleedIntervals;
+    [SerializeField] private float specialHeal;
 
     private Coroutine currentCoroutine;
-    private bool vampireCursed;
+    private bool isCursed;
     private bool isBleeding;
 
     #endregion
@@ -100,13 +98,22 @@ public class Health : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Check if the script is attached to an enemy and if it is being knocked back
-        if (gameObject.CompareTag("Enemy") && knockedBack)
+        // If not knocked back, do not execute this code
+        if (!knockedBack) return;
+
+        // Check if the collider is in the collidesWith layermask
+        if ((collidesWith & (1 << collision.gameObject.layer)) != 0)
         {
-            // Check if the collider is in the collidesWith layermask
-            if ((collidesWith & (1 << collision.gameObject.layer)) != 0)
+            Damage(knockBackDamage);
+
+            GameObject collider = collision.gameObject;
+
+            // If the enemy collided with another enemy, damage it too
+            if (collider.gameObject.CompareTag("Enemy"))
             {
-                Damage(knockBackDamage);
+                // Retrieve its health component and damage the enemy
+                Health eHealth = collider.GetComponent<Health>();
+                eHealth.Damage(knockBackDamage);
             }
         }
     }
@@ -176,13 +183,13 @@ public class Health : MonoBehaviour
         // If it is a special bleed, set cursed to true
         if (isSpecial)
         {
-            vampireCursed = true;
+            isCursed = true;
             SetIconActive(1, true);
             SetBleed(damage, duration);
         }
 
         // Special bleeds cannot be overridden
-        if (vampireCursed) return;
+        if (isCursed) return;
 
         // Set a regular bleed
         SetIconActive(0, true);
@@ -215,9 +222,9 @@ public class Health : MonoBehaviour
         isBleeding = false;
 
         // If it was a curse of the vampire, it is now passed. Disable the icon and set the cursed status to false
-        if (vampireCursed)
+        if (isCursed)
         {
-            vampireCursed = false;
+            isCursed = false;
             SetIconActive(1, false);
         }
         else

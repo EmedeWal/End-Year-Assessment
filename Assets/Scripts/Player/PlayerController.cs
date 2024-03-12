@@ -17,20 +17,13 @@ public class PlayerController : MonoBehaviour
     private Health health;
     private Souls souls;
 
-    [Header("UI")]
-    [SerializeField] private GameObject[] icons;
-    [SerializeField] private float iconOffset;
-
-    private RectTransform rectTransform;
-    private Vector2 defaultPosition;
-
     #endregion
 
     //
 
     #region Variables
 
-    private Coroutine currentCoroutine;
+    private Coroutine invincibleCoroutine;
 
     #endregion
 
@@ -129,6 +122,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dodgeCooldown;
     [SerializeField] private float dodgeDuration;
 
+    private Coroutine dodgeCoroutine;
     private bool canDodge = true;
     private bool isDodging;
 
@@ -147,12 +141,6 @@ public class PlayerController : MonoBehaviour
 
         // Set objects inactive
         playerCanvas.SetActive(false);
-        
-        // Set all icons to inactive
-        foreach (GameObject icon in icons) icon.SetActive(false);
-
-        rectTransform = icons[0].GetComponent<RectTransform>();
-        defaultPosition = rectTransform.anchoredPosition;
     }
 
     private void Start()
@@ -176,8 +164,6 @@ public class PlayerController : MonoBehaviour
         // Check to see if you collided with an enemy during your dodge while the ghost special is active
         if (collision.gameObject.CompareTag("Enemy") && isDodging && ghostSpecialActive)
         {
-            Debug.Log("Enemy was marked");
-
             // Retrieve the health script on the enemy
             Health eHealth = collision.gameObject.GetComponent<Health>();
 
@@ -276,6 +262,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+        // Calculate movement
         Vector3 movement = new Vector3(move.x, 0f, move.y);
 
         // First check if the player is moving to avoid snapping back to its default rotation upon being idle.
@@ -291,8 +278,11 @@ public class PlayerController : MonoBehaviour
         // Check if the player is running or not, then set the correct animation
         animator.SetFloat("Movement", movement.magnitude);
 
-        // If the player is not moving, do this to stop him from moving after collisions
-        if (movement.magnitude == 0) rb.velocity = Vector3.zero;
+        // If the player is not moving, but is dodging, make sure the run animation plays nonetheless
+        if (movement.magnitude == 0 && isDodging) animator.SetFloat("Movement", rb.velocity.magnitude);
+
+        // If the player is not moving or dodging, do this to stop him from moving after collisions
+        if (movement.magnitude == 0 && !isDodging) rb.velocity = Vector3.zero;
     }
 
     #endregion
@@ -476,7 +466,7 @@ public class PlayerController : MonoBehaviour
         float specialDuration = orcSpecialDuration * charges;
 
         // Become invulnerable to damage for the duration of the special
-        currentCoroutine = StartCoroutine(Invincible(specialDuration));
+        invincibleCoroutine = StartCoroutine(Invincible(specialDuration));
         Invoke(nameof(SpecialEnd), specialDuration);
     }
 
@@ -487,6 +477,10 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator GhostSpecialEffect(int charges)
     {
+        // Upon activation, make sure the dodge's cooldown is reset
+        if (dodgeCoroutine != null ) StopCoroutine(dodgeCoroutine);
+        canDodge = true;
+
         // Set booleans
         specialActive = true;
         ghostSpecialActive = true;
@@ -526,19 +520,21 @@ public class PlayerController : MonoBehaviour
             // Add the dodge force
             rb.AddForce(transform.forward * dodgeForce, ForceMode.Impulse);
 
-            // Reset the dodge ability depending on the dodge cooldown
-            Invoke(nameof(ResetDodge), dodgeCooldown);
-
             // Stop the dodge after the dodge duration
             Invoke(nameof(EndDodge), dodgeDuration);
 
+            // Reset the dodge ability depending on the dodge cooldown
+            dodgeCoroutine = StartCoroutine(ResetDodge(dodgeCooldown));
+
             // Make the player invulnerable for the dodge duration, unless the player is already invincible
-            if (currentCoroutine == null) StartCoroutine(Invincible(dodgeDuration));
+            if (invincibleCoroutine == null) StartCoroutine(Invincible(dodgeDuration));
         }
     }
 
-    private void ResetDodge()
+    private IEnumerator ResetDodge(float duration)
     {
+        yield return new WaitForSeconds(duration);
+
         canDodge = true;
     }
 
@@ -552,38 +548,17 @@ public class PlayerController : MonoBehaviour
 
     //
 
-    #region Passives
-
-    public void VampireSpecialStack()
-    {
-        SetIconActive(0, true);
-
-        
-    }
-
-    #endregion 
-
-    //
-
     #region Other
 
     private IEnumerator Invincible(float duration)
     {
         // Make the player invincible for the duration
         health.invincible = true;
-        SetIconActive(1, true);
         yield return new WaitForSeconds(duration);
         health.invincible = false;
-        SetIconActive(1, false);
 
         // If a coroutine is assigned, unassign it
-        if (currentCoroutine != null) currentCoroutine = null;
-    }
-
-    private void SetIconActive(int position, bool active)
-    {
-        // Handle status icon logic
-        icons[position].SetActive(active);
+        if (invincibleCoroutine != null) invincibleCoroutine = null;
     }
 
     #endregion
