@@ -3,12 +3,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
     #region References
 
-    [Header("References")]
+    [Header("References: Objects")]
     [SerializeField] private GameObject playerCanvas;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
@@ -42,10 +43,13 @@ public class PlayerController : MonoBehaviour
 
     [Header("Stance: General")]
     [SerializeField] private string[] stances;
-    [SerializeField] private GameObject[] stanceIcons;
 
     public int stancePosition = 0;
     private string currentStance;
+
+    [Header("Stances: UI")]
+    [SerializeField] private GameObject[] stanceIcons;
+    [SerializeField] private Color[] stanceColors;
 
     [Header("Stance: Vampire - Default")]
     [SerializeField] private float bleedBaseDamage;
@@ -109,7 +113,15 @@ public class PlayerController : MonoBehaviour
 
     #region Special
 
+    [Header("Special: UI")]
+    [SerializeField] private GameObject[] stanceSpecialIcons;
+    [SerializeField] private TextMeshProUGUI specialDurationText;
+    [SerializeField] private Image specialDurationImage;
+
     [HideInInspector] public bool specialActive;
+
+    private float specialDuration;
+    private float specialCountdown;
 
     #endregion
 
@@ -117,12 +129,17 @@ public class PlayerController : MonoBehaviour
 
     #region Dodging
 
-    [Header("Dodging")]
+    [Header("Dodging: Variables")]
     [SerializeField] private float dodgeForce;
     [SerializeField] private float dodgeCooldown;
     [SerializeField] private float dodgeDuration;
 
+    [Header("Dodging: UI")]
+    [SerializeField] private TextMeshProUGUI cooldownTextDodge;
+    [SerializeField] private Image cooldownImageDodge;
+
     private Coroutine dodgeCoroutine;
+    private float dodgeCooldownTimer;
     private bool canDodge = true;
     private bool isDodging;
 
@@ -148,6 +165,13 @@ public class PlayerController : MonoBehaviour
         // Make the editor a little more intuitive
         stancePosition--;
 
+        // Set the cooldown text inactive and make sure the images value is correct
+        cooldownTextDodge.gameObject.SetActive(false);
+        cooldownImageDodge.fillAmount = 0;
+
+        specialDurationText.gameObject.SetActive(false);
+        specialDurationImage.fillAmount = 1f;
+
         // Swap to the correct stance at the beginning of the game
         SwapStance();
     }
@@ -157,6 +181,12 @@ public class PlayerController : MonoBehaviour
         // Move the player, if he is allowed to. If not, make sure he stands still
         if (canMove) Move();
         else rb.velocity = Vector3.zero;
+
+        // Handle dodge cooldown
+        if (!canDodge) DodgeCooldown(dodgeCooldown);
+
+        // Handle special timer
+        if (specialActive) SpecialTimer(specialDuration);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -246,12 +276,15 @@ public class PlayerController : MonoBehaviour
         currentStance = stances[stancePosition];
 
         // Disable all stance icons. Then, set the correct one active
-        foreach (GameObject icon in stanceIcons)
-        {
-            icon.SetActive(false);
-        }
-
+        foreach (GameObject icon in stanceIcons) icon.SetActive(false);
         stanceIcons[stancePosition].SetActive(true);
+
+        // Check if there is a special going on. If not, then swap to the correct special stance icon
+        if (!specialActive)
+        {
+            foreach (GameObject specialIcon in stanceSpecialIcons) specialIcon.SetActive(false);
+            stanceSpecialIcons[stancePosition].SetActive(true);
+        }
     }
 
     #endregion
@@ -392,19 +425,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void SpecialEnd()
-    {
-        specialActive = false;
-        souls.SpendSouls(souls.GetCharges() * 20);
-    }
-
     private void VampireSpecial(int charges)
     {
-        specialActive = true;
-
         // Local variables to keep track of the base amount of bleed ticks for the special
         int baseTicks = 2;
         float ticks = baseTicks * charges;
+
+        // The duration is 0.8 (bleed intervals) * ticks 
+        float duration = ticks * 0.8f;
+
+        // Set up special timer
+        SpecialTimerSetup(duration);
+
 
         // Trigger visuals
         StartCoroutine(VampireSpecialGFX());
@@ -427,9 +459,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        /* Regardless of enemies hit, call EndSpecial after the duration
-         * The duration is 0.8 (bleed intervals) * ticks */
-        Invoke(nameof(SpecialEnd), 0.8f * ticks);
+        // Regardless of enemies hit, call EndSpecial after the duration
+        Invoke(nameof(SpecialEnd), duration);
     }
 
     private IEnumerator VampireSpecialGFX()
@@ -460,30 +491,33 @@ public class PlayerController : MonoBehaviour
     }
 
     private void OrcSpecial(int charges)
-    {
-        specialActive = true;
+    {        
+        // Set up variables
+        float finalSpecialDuration = orcSpecialDuration * charges;
 
-        float specialDuration = orcSpecialDuration * charges;
+        // Set up special timer
+        SpecialTimerSetup(finalSpecialDuration);
 
         // Become invulnerable to damage for the duration of the special
-        invincibleCoroutine = StartCoroutine(Invincible(specialDuration));
-        Invoke(nameof(SpecialEnd), specialDuration);
+        invincibleCoroutine = StartCoroutine(Invincible(finalSpecialDuration));
+        Invoke(nameof(SpecialEnd), finalSpecialDuration);
     }
 
     private void GhostSpecial(int charges)
     {
+        // Set up special timer
+        SpecialTimerSetup(ghostSpecialDuration * charges);
+        
+        // Do this to calculate dodge collisions
+        ghostSpecialActive = true;
+
         StartCoroutine(GhostSpecialEffect(charges));
     }
 
     private IEnumerator GhostSpecialEffect(int charges)
     {
         // Upon activation, make sure the dodge's cooldown is reset
-        if (dodgeCoroutine != null ) StopCoroutine(dodgeCoroutine);
-        canDodge = true;
-
-        // Set booleans
-        specialActive = true;
-        ghostSpecialActive = true;
+        DodgeReset();
 
         // Reduce the dodge cooldown by 1 second for each charge
         dodgeCooldown -= 1 * charges;
@@ -501,6 +535,53 @@ public class PlayerController : MonoBehaviour
         ghostSpecialActive = false;
 
         SpecialEnd();
+    }
+
+    private void SpecialTimerSetup(float duration)
+    {
+        // Modify variables
+        specialDuration = duration;
+        specialCountdown = specialDuration;
+        specialActive = true;
+
+        // Set the right color for the text component
+        Color color = stanceColors[stancePosition];
+        specialDurationText.color = color;
+
+        // Set the text active
+        specialDurationText.gameObject.SetActive(true);
+    }
+
+    private void SpecialTimer(float duration)
+    {
+        specialCountdown -= Time.deltaTime;
+
+        // Is the duration zero?
+        if (specialCountdown <= 0) SpecialEnd();
+        else
+        {
+            // Set the UI to accurate values
+            specialDurationText.text = Mathf.RoundToInt(specialCountdown).ToString();
+            specialDurationImage.fillAmount = 1 - (specialCountdown / duration);
+        }
+    }
+
+    public void SpecialEnd()
+    {
+        // Reset variables
+        specialDurationText.gameObject.SetActive(false);
+        specialDurationImage.fillAmount = 1;
+        specialActive = false;
+
+        // Set the text inactive       
+        specialDurationText.gameObject.SetActive(false);
+
+        // Swap back to the correct special stance icon
+        foreach (GameObject specialIcon in stanceSpecialIcons) specialIcon.SetActive(false);
+        stanceSpecialIcons[stancePosition].SetActive(true);
+
+        // Spend souls
+        souls.SpendSouls(souls.GetCharges() * 20);
     }
 
     #endregion
@@ -521,27 +602,45 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(transform.forward * dodgeForce, ForceMode.Impulse);
 
             // Stop the dodge after the dodge duration
-            Invoke(nameof(EndDodge), dodgeDuration);
-
-            // Reset the dodge ability depending on the dodge cooldown
-            dodgeCoroutine = StartCoroutine(ResetDodge(dodgeCooldown));
+            Invoke(nameof(DodgeEnd), dodgeDuration);
 
             // Make the player invulnerable for the dodge duration, unless the player is already invincible
             if (invincibleCoroutine == null) StartCoroutine(Invincible(dodgeDuration));
+
+            // Set up UI elements
+            cooldownTextDodge.gameObject.SetActive(true);
+            dodgeCooldownTimer = dodgeCooldown;
         }
     }
 
-    private IEnumerator ResetDodge(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-
-        canDodge = true;
-    }
-
-    private void EndDodge()
+    private void DodgeEnd()
     {
         rb.velocity = Vector3.zero;
         isDodging = false;
+    }
+
+    private void DodgeCooldown(float cooldown)
+    {
+        dodgeCooldownTimer -= Time.deltaTime;
+
+        // Is the cooldown zero?
+        if (dodgeCooldownTimer <= 0) DodgeReset();
+        else
+        {
+            // Set the cooldownText accurate
+            cooldownTextDodge.text = Mathf.RoundToInt(dodgeCooldownTimer).ToString();
+            cooldownImageDodge.fillAmount = dodgeCooldownTimer / cooldown;
+        }
+    }
+
+    private void DodgeReset()
+    {
+        // Reset variables
+        cooldownTextDodge.gameObject.SetActive(false);
+        cooldownImageDodge.fillAmount = 0;
+
+        // Reset the dodge
+        canDodge = true;
     }
 
     #endregion
