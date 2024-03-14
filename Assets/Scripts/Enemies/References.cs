@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class References : MonoBehaviour
 {
+    // Enemy Spawner Reference
+    [HideInInspector] public EnemySpawner spawner;
+
+    // Player References
     [HideInInspector] public PlayerController playerController;
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Health playerHealth;
     [HideInInspector] public Souls playerSouls;
-
-    private EnemySpawner spawner;
 
     private void Awake()
     {

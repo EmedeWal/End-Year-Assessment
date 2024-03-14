@@ -8,6 +8,7 @@ public class SkeletonAI : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform attackPoint;
+    [SerializeField] private Collider eCollider;
     [SerializeField] private Animator animator;
     [SerializeField] private LayerMask playerLayer;
 
@@ -15,7 +16,6 @@ public class SkeletonAI : MonoBehaviour
 
     private References references;
     private NavMeshAgent agent;
-    private Rigidbody rb;
 
     #endregion
 
@@ -62,7 +62,6 @@ public class SkeletonAI : MonoBehaviour
         // Set up all references
         references = GetComponent<References>();
         agent = GetComponent<NavMeshAgent>();
-        rb = GetComponent<Rigidbody>();
 
         player = references.playerTransform;
     }
@@ -223,6 +222,9 @@ public class SkeletonAI : MonoBehaviour
     {
         // Play the animation and remove enemy intelligence
         animator.SetTrigger("Death");
+
+        // Remove components
+        Destroy(eCollider);
         Destroy(this);
     }
 

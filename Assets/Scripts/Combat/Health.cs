@@ -11,20 +11,22 @@ public class Health : MonoBehaviour
     #region References
 
     [Header("References")]
-    [SerializeField] private GameObject[] statusIcons;
-    [SerializeField] private Transform canvasPrefab;
+    [SerializeField] private GameObject canvasPrefab;
     [SerializeField] private Animator animator;
-    [SerializeField] private Gradient gradient;
-    [SerializeField] private Slider slider;
-    [SerializeField] private Image fill;
+    [SerializeField] private HealthUI healthUI;
 
+    private GameObject canvas;
+
+    // Components
     private References references;
     private Rigidbody rb;
 
+    // Player
     private PlayerController playerController;
     private Transform playerTransform;
     private Health playerHealth;
     private Souls playerSouls;
+
     #endregion
 
     //
@@ -90,30 +92,33 @@ public class Health : MonoBehaviour
 
     #region General
 
-    private void Awake()
-    {
-        // Initially disable all status icons
-        foreach (GameObject icon in statusIcons) icon.SetActive(false);
-    }
-
     private void Start()
     {
         // Initiliase the health settings
         currentHealth = startingHealth;
 
-        SetMaxHealth();
-
         // Set up some references (Enemies only)
         if (gameObject.CompareTag("Enemy"))
         {
+            // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
+            canvas = Instantiate(canvasPrefab, transform);
+
+            // Get the healthUI component on the canvas
+            healthUI = canvas.GetComponent<HealthUI>();
+
+            // Get Components
             references = GetComponent<References>();
             rb = GetComponent<Rigidbody>();
 
+            // Assign Player References
             playerController = references.playerController;
             playerTransform = references.playerTransform;
             playerHealth = references.playerHealth;
             playerSouls = references.playerSouls;
         }
+
+        // Update UI
+        healthUI.SetMaxHealth(currentHealth, maxHealth);
     }
 
     private void Update()
@@ -149,20 +154,6 @@ public class Health : MonoBehaviour
 
     #region Health Bar UI
 
-    private void SetMaxHealth()
-    {
-        slider.maxValue = maxHealth;
-        slider.value = currentHealth;
-        fill.color = gradient.Evaluate(slider.normalizedValue);
-    }
-
-
-    private void SetCurrentHealth()
-    {
-        slider.value = currentHealth;
-        fill.color = gradient.Evaluate(slider.normalizedValue);
-    }
-
     private void HealthBarPosition()
     {
 
@@ -182,8 +173,8 @@ public class Health : MonoBehaviour
         currentHealth += amount;
         if (currentHealth > maxHealth) currentHealth = maxHealth;
 
-        // Update the UI
-        SetCurrentHealth();
+        // Update UI
+        healthUI.SetCurrentHealth(currentHealth);
     }
 
     public void Damage(float amount)
@@ -197,8 +188,8 @@ public class Health : MonoBehaviour
         currentHealth -= amount * damageModifier;
         if (currentHealth <= 0) StartCoroutine(Die());
 
-        // Update the UI
-        SetCurrentHealth();
+        // Update UI
+        healthUI.SetCurrentHealth(currentHealth);
 
         // If the amount of damage taken was high enough, stagger the enemy
         if (amount >= staggerThreshold) stagger?.Invoke();
@@ -209,6 +200,8 @@ public class Health : MonoBehaviour
 
     //
 
+    #region Stances
+
     #region Vampire Stance
 
     public void Bleed(float damage, float duration, bool isSpecial)
@@ -217,8 +210,8 @@ public class Health : MonoBehaviour
         if (isSpecial)
         {
             isCursed = true;
-            SetStatusIconActive(0, false);
-            SetStatusIconActive(1, true);
+            healthUI.SetStatusIconActive(0, false);
+            healthUI.SetStatusIconActive(1, true);
             SetBleed(damage, duration);
         }
 
@@ -226,7 +219,7 @@ public class Health : MonoBehaviour
         if (isCursed) return;
 
         // Set a regular bleed
-        SetStatusIconActive(0, true);
+        healthUI.SetStatusIconActive(0, true);
         SetBleed(damage, duration);
     }
 
@@ -259,12 +252,12 @@ public class Health : MonoBehaviour
         if (isCursed)
         {
             isCursed = false;
-            SetStatusIconActive(1, false);
+            healthUI.SetStatusIconActive(1, false);
         }
         else
         {
             // If it was a regular bleed, set the normal bleed icon to false
-            SetStatusIconActive(0, false);
+            healthUI.SetStatusIconActive(0, false);
         }
     }
 
@@ -285,7 +278,7 @@ public class Health : MonoBehaviour
 
         // The enemy is knocked back. Set the icon
         knockedBack = true;
-        SetStatusIconActive(2, true);
+        healthUI.SetStatusIconActive(2, true);
 
         // Calculate the direction from the player to the enemy.
         Vector3 knockbackDirection = (transform.position - playerTransform.position).normalized;
@@ -301,7 +294,7 @@ public class Health : MonoBehaviour
     {
         rb.velocity = Vector3.zero;
         knockedBack = false;
-        SetStatusIconActive(2, false);
+        healthUI.SetStatusIconActive(2, false);
     }
 
     #endregion
@@ -314,27 +307,19 @@ public class Health : MonoBehaviour
     {
         // Make the enemy take more damage and set the status icon active
         damageModifier = 1f + damageIncrease;
-        SetStatusIconActive(3, true);
+        healthUI.SetStatusIconActive(3, true);
     }
 
     public void RemoveMark()
     {
         // Reset the damage modifier and set the status icon inactive
         damageModifier = 1f;
-        SetStatusIconActive(3, false);
+        healthUI.SetStatusIconActive(3, false);
     }
 
     #endregion
 
     //
-
-    #region Status Effect UI
-
-    private void SetStatusIconActive(int position, bool active)
-    {
-        // Handle status icon logic
-        statusIcons[position].SetActive(active);
-    }
 
     #endregion
 
