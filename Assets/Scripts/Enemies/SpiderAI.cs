@@ -8,7 +8,6 @@ public class SpiderAI : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform attackPoint;
-    [SerializeField] private Collider eCollider;
     [SerializeField] private Animator animator;
     [SerializeField] private LayerMask playerLayer;
 
@@ -38,14 +37,16 @@ public class SpiderAI : MonoBehaviour
 
     #region Variables
 
-    [Header("Variables")]
+    [Header("Variables: Attacking")]
     [SerializeField] private Vector3 attackSize;
     [SerializeField] private float attackDuration;
     [SerializeField] private float attackDamage;
     [SerializeField] private float attackRange;
     [SerializeField] private float attackCD;
 
+    [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private float deathDelay;
 
     private Coroutine attackReset;
     private bool canAttack = true;
@@ -212,8 +213,6 @@ public class SpiderAI : MonoBehaviour
         // Reset AttackReset()
         if (attackReset != null && !isAttacking)
         {
-            animator.SetTrigger("Stagger");
-
             StopCoroutine(attackReset);
             attackReset = StartCoroutine(AttackReset());
         }
@@ -224,8 +223,8 @@ public class SpiderAI : MonoBehaviour
         // Play the animation and remove enemy intelligence
         animator.SetTrigger("Death");
 
-        // Remove components
-        Destroy(eCollider);
+        references.Die(deathDelay);
+
         Destroy(this);
     }
 

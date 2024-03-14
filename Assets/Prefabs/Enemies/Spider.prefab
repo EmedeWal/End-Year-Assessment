@@ -2530,7 +2530,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackPoint: {fileID: 8672879705350913583}
-  eCollider: {fileID: 4005580539016276537}
   animator: {fileID: 7461846953144706116}
   playerLayer:
     serializedVersion: 2
@@ -2543,6 +2542,7 @@ MonoBehaviour:
   attackRange: 3
   attackCD: 3
   rotationSpeed: 3
+  deathDelay: 2
 --- !u!114 &4815631687875623207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2586,12 +2586,13 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 0}
   animator: {fileID: 7461846953144706116}
   healthUI: {fileID: 0}
+  canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 50
   startingHealth: 50
   staggerThreshold: 10
-  deathDelay: 2.5
   currentHealth: 0
   invincible: 0
   bleedIntervals: 0.8

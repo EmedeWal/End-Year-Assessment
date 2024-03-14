@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -12,9 +13,11 @@ public class Health : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private GameObject canvasPrefab;
+    [SerializeField] private Collider objectCollider;
     [SerializeField] private Animator animator;
     [SerializeField] private HealthUI healthUI;
 
+    // This variable is used to store the instance of the prefab
     private GameObject canvas;
 
     // Components
@@ -34,15 +37,17 @@ public class Health : MonoBehaviour
     #region Variables
 
     [Header("Variables")]
+    [SerializeField] private Vector3 canvasOffset;
+
     [SerializeField] private float maxHealth;
     [SerializeField] private float startingHealth;
+
     [SerializeField] private float staggerThreshold;
-    [SerializeField] private float deathDelay;
 
     [HideInInspector] public float currentHealth;
     [HideInInspector] public bool invincible;
 
-    private bool isDying;
+    private bool isEnemy;
 
     #endregion
 
@@ -92,23 +97,31 @@ public class Health : MonoBehaviour
 
     #region General
 
+    private void Awake()
+    {
+        if (gameObject.CompareTag("Enemy")) isEnemy = true;
+    }
+
     private void Start()
     {
         // Initiliase the health settings
         currentHealth = startingHealth;
 
         // Set up some references (Enemies only)
-        if (gameObject.CompareTag("Enemy"))
+        if (isEnemy)
         {
-            // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
-            canvas = Instantiate(canvasPrefab, transform);
-
-            // Get the healthUI component on the canvas
-            healthUI = canvas.GetComponent<HealthUI>();
-
             // Get Components
             references = GetComponent<References>();
             rb = GetComponent<Rigidbody>();
+
+            // Make a temporary gameObject of the spawner reference
+            GameObject spawnerObject = references.spawner.gameObject;
+
+            // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
+            canvas = Instantiate(canvasPrefab, spawnerObject.transform);
+
+            // Get the healthUI component on the canvas
+            healthUI = canvas.GetComponent<HealthUI>();
 
             // Assign Player References
             playerController = references.playerController;
@@ -123,7 +136,7 @@ public class Health : MonoBehaviour
 
     private void Update()
     {
-        HealthBarPosition();
+        if (isEnemy) HealthBarPosition();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -156,7 +169,8 @@ public class Health : MonoBehaviour
 
     private void HealthBarPosition()
     {
-
+        // Make sure the canvas is set to the same position as the enemy + offset;
+        if (canvas != null ) canvas.transform.position = transform.position + canvasOffset;
     }
 
     #endregion
@@ -186,7 +200,7 @@ public class Health : MonoBehaviour
 
         // Modify health according to amount and the damage modifier and handle out of bounds input
         currentHealth -= amount * damageModifier;
-        if (currentHealth <= 0) StartCoroutine(Die());
+        if (currentHealth <= 0) Die();
 
         // Update UI
         healthUI.SetCurrentHealth(currentHealth);
@@ -327,23 +341,18 @@ public class Health : MonoBehaviour
 
     #region Other
 
-    private IEnumerator Die()
+    private void Die()
     {
-        // Prevent several instances
-        if (!isDying)
-        {
-            isDying = true;
+        // If the enemy is marked (more damage taken) while it dies, remove it from the list
+        if (isEnemy && damageModifier > 1f) playerController.markedEnemies.Remove(this);
 
-            // If the enemy is marked (more damage taken) while it dies, remove it from the list
-            if (damageModifier > 1f) playerController.markedEnemies.Remove(this);
+        // Invoke the death event
+        death?.Invoke();
 
-            // Invoke the death event
-            death?.Invoke();
-
-            yield return new WaitForSeconds(deathDelay);
-
-            Destroy(gameObject);
-        }
+        // Destroy all relevant components
+        Destroy(objectCollider);
+        Destroy(canvas);
+        Destroy(this);
     }
 
     #endregion

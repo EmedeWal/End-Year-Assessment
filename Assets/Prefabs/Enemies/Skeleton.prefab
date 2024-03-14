@@ -1180,7 +1180,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 2
   m_Height: 6
   m_Direction: 1
   m_Center: {x: 0, y: 3, z: 0}
@@ -1214,7 +1214,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackPoint: {fileID: 1333079530877925728}
-  eCollider: {fileID: 595508343507091746}
   animator: {fileID: 3700471490037644492}
   playerLayer:
     serializedVersion: 2
@@ -1227,6 +1226,7 @@ MonoBehaviour:
   attackRange: 3
   attackCD: 3
   rotationSpeed: 2
+  deathDelay: 1
 --- !u!114 &9121345064740217676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1270,12 +1270,13 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 0}
   animator: {fileID: 3700471490037644492}
   healthUI: {fileID: 0}
+  canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 100
   startingHealth: 100
   staggerThreshold: 10
-  deathDelay: 1.5
   currentHealth: 0
   invincible: 0
   bleedIntervals: 0.8
