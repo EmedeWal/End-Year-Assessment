@@ -99,11 +99,12 @@ public class PlayerController : MonoBehaviour
     #region Attacking
 
     [Header("Attack Variables")]
-    [SerializeField] private float attackDamage;
     [SerializeField] private float attackOffset;
     [SerializeField] private float attackSpeed;
     [SerializeField] private float attackRange;
     [SerializeField] private float damageDelay;
+
+    public float attackDamage;
 
     private bool canAttack = true;
 
@@ -664,14 +665,14 @@ public class PlayerController : MonoBehaviour
 
     //
 
-    private void OnDrawGizmosSelected()
-    {
-        //// For the attack
-        //Gizmos.color = Color.green;
-        //Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    //private void OnDrawGizmosSelected()
+    //{
+    //    // For the attack
+    //    Gizmos.color = Color.green;
+    //    Gizmos.DrawWireSphere(attackPoint.position, attackRange);
 
-        //// For the vampire special
-        //Gizmos.color = Color.red;
-        //Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
-    }
+    //    // For the vampire special
+    //    Gizmos.color = Color.red;
+    //    Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
+    //}
 }

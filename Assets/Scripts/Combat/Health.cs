@@ -1,21 +1,28 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
+    public UnityEvent stagger;
+    public UnityEvent death;
+
     #region References
 
     [Header("References")]
     [SerializeField] private GameObject[] statusIcons;
+    [SerializeField] private Transform canvasPrefab;
+    [SerializeField] private Animator animator;
     [SerializeField] private Gradient gradient;
     [SerializeField] private Slider slider;
     [SerializeField] private Image fill;
 
-    private EnemySpawner spawner;
+    private References references;
     private Rigidbody rb;
 
     private PlayerController playerController;
+    private Transform playerTransform;
     private Health playerHealth;
     private Souls playerSouls;
     #endregion
@@ -27,13 +34,19 @@ public class Health : MonoBehaviour
     [Header("Variables")]
     [SerializeField] private float maxHealth;
     [SerializeField] private float startingHealth;
+    [SerializeField] private float staggerThreshold;
+    [SerializeField] private float deathDelay;
 
     [HideInInspector] public float currentHealth;
     [HideInInspector] public bool invincible;
 
+    private bool isDying;
+
     #endregion
 
     //
+
+    #region Stance Variables and References
 
     #region Vampire Stance
 
@@ -55,8 +68,9 @@ public class Health : MonoBehaviour
     [SerializeField] private LayerMask collidesWith;
     [SerializeField] private float knockBackDuration;
 
+    [HideInInspector] public bool knockedBack;
+
     private float knockBackDamage;
-    private bool knockedBack;
 
     #endregion
 
@@ -65,6 +79,10 @@ public class Health : MonoBehaviour
     #region Ghost Stance
 
     private float damageModifier = 1f;
+
+    #endregion
+
+    //
 
     #endregion
 
@@ -88,12 +106,19 @@ public class Health : MonoBehaviour
         // Set up some references (Enemies only)
         if (gameObject.CompareTag("Enemy"))
         {
-            spawner = GetComponentInParent<EnemySpawner>();
+            references = GetComponent<References>();
             rb = GetComponent<Rigidbody>();
-            playerController = spawner.playerController;
-            playerHealth = spawner.playerHealth;
-            playerSouls = spawner.playerSouls;
+
+            playerController = references.playerController;
+            playerTransform = references.playerTransform;
+            playerHealth = references.playerHealth;
+            playerSouls = references.playerSouls;
         }
+    }
+
+    private void Update()
+    {
+        HealthBarPosition();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -122,7 +147,7 @@ public class Health : MonoBehaviour
 
     //
 
-    #region UI
+    #region Health Bar UI
 
     private void SetMaxHealth()
     {
@@ -136,6 +161,11 @@ public class Health : MonoBehaviour
     {
         slider.value = currentHealth;
         fill.color = gradient.Evaluate(slider.normalizedValue);
+    }
+
+    private void HealthBarPosition()
+    {
+
     }
 
     #endregion
@@ -165,10 +195,13 @@ public class Health : MonoBehaviour
 
         // Modify health according to amount and the damage modifier and handle out of bounds input
         currentHealth -= amount * damageModifier;
-        if (currentHealth <= 0) Die();
+        if (currentHealth <= 0) StartCoroutine(Die());
 
         // Update the UI
         SetCurrentHealth();
+
+        // If the amount of damage taken was high enough, stagger the enemy
+        if (amount >= staggerThreshold) stagger?.Invoke();
     }
 
 
@@ -184,7 +217,8 @@ public class Health : MonoBehaviour
         if (isSpecial)
         {
             isCursed = true;
-            SetIconActive(1, true);
+            SetStatusIconActive(0, false);
+            SetStatusIconActive(1, true);
             SetBleed(damage, duration);
         }
 
@@ -192,7 +226,7 @@ public class Health : MonoBehaviour
         if (isCursed) return;
 
         // Set a regular bleed
-        SetIconActive(0, true);
+        SetStatusIconActive(0, true);
         SetBleed(damage, duration);
     }
 
@@ -225,12 +259,12 @@ public class Health : MonoBehaviour
         if (isCursed)
         {
             isCursed = false;
-            SetIconActive(1, false);
+            SetStatusIconActive(1, false);
         }
         else
         {
             // If it was a regular bleed, set the normal bleed icon to false
-            SetIconActive(0, false);
+            SetStatusIconActive(0, false);
         }
     }
 
@@ -251,10 +285,13 @@ public class Health : MonoBehaviour
 
         // The enemy is knocked back. Set the icon
         knockedBack = true;
-        SetIconActive(2, true);
+        SetStatusIconActive(2, true);
 
-        // Apply a negative force, to make the enemy fly backwards
-        rb.AddForce(transform.forward *  force * -1, ForceMode.Impulse);
+        // Calculate the direction from the player to the enemy.
+        Vector3 knockbackDirection = (transform.position - playerTransform.position).normalized;
+
+        // Apply force to the enemy's Rigidbody in the calculated direction.
+        rb.AddForce(knockbackDirection * force, ForceMode.Impulse);
 
         // After a little while, stop the knockBack and reset the variable
         Invoke(nameof(ResetKnockBack), knockBackDuration * charges);
@@ -264,7 +301,7 @@ public class Health : MonoBehaviour
     {
         rb.velocity = Vector3.zero;
         knockedBack = false;
-        SetIconActive(2, false);
+        SetStatusIconActive(2, false);
     }
 
     #endregion
@@ -277,14 +314,26 @@ public class Health : MonoBehaviour
     {
         // Make the enemy take more damage and set the status icon active
         damageModifier = 1f + damageIncrease;
-        SetIconActive(3, true);
+        SetStatusIconActive(3, true);
     }
 
     public void RemoveMark()
     {
         // Reset the damage modifier and set the status icon inactive
         damageModifier = 1f;
-        SetIconActive(3, false);
+        SetStatusIconActive(3, false);
+    }
+
+    #endregion
+
+    //
+
+    #region Status Effect UI
+
+    private void SetStatusIconActive(int position, bool active)
+    {
+        // Handle status icon logic
+        statusIcons[position].SetActive(active);
     }
 
     #endregion
@@ -293,18 +342,23 @@ public class Health : MonoBehaviour
 
     #region Other
 
-    private void SetIconActive(int position, bool active)
+    private IEnumerator Die()
     {
-        // Handle status icon logic
-        statusIcons[position].SetActive(active);
-    }
+        // Prevent several instances
+        if (!isDying)
+        {
+            isDying = true;
 
-    private void Die()
-    {
-        // If the enemy is marked while it dies, remove it from the list
-        if (damageModifier == 1f) playerController.markedEnemies.Remove(this);
+            // If the enemy is marked (more damage taken) while it dies, remove it from the list
+            if (damageModifier > 1f) playerController.markedEnemies.Remove(this);
 
-        Destroy(gameObject);
+            // Invoke the death event
+            death?.Invoke();
+
+            yield return new WaitForSeconds(deathDelay);
+
+            Destroy(gameObject);
+        }
     }
 
     #endregion
