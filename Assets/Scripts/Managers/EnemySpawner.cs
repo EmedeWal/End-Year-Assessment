@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -19,18 +21,28 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Wave System")]
 
-    public List<EnemyToSpawn> enemies = new List<EnemyToSpawn>();
-    public int currentWave = 0;
-    public int waveValue;
-    public int waveValueModifier = 10;
+    [SerializeField] private TextMeshProUGUI waveText;
 
-    public List<GameObject> enemiesToSpawn = new List<GameObject>();
+    // Setup
+    [SerializeField] private List<EnemyToSpawn> enemies = new List<EnemyToSpawn>();
+    [SerializeField] private int waveValueModifier = 10;
+    private int currentWave = 0;
+    private int waveValue;
 
-    public Transform spawnLocation;
-    public float waveDuration = 60;
-    private float spawnTimer;
+    // Spawning
+    [SerializeField] private float waveDuration;
+
+    private List<GameObject> enemiesToSpawn = new List<GameObject>();
     private float waveTimer;
+    private float spawnTimer;
     private float spawnInterval;
+
+    // Keep track of the enemies in the scene
+    [HideInInspector] public int enemiesDead;
+    private int enemiesSpawned;
+
+    [SerializeField] private float minDistanceFromPlayer;
+    [SerializeField] private float spawnRadius;
 
     private void Start()
     {
@@ -44,8 +56,15 @@ public class EnemySpawner : MonoBehaviour
 
     private void GenerateWave()
     {
+        // Reset variables
+        enemiesSpawned = 0;
+        enemiesDead = 0;
+
         // Increment currentWave
         currentWave++;
+
+        // Display the current wave on the UI
+        waveText.text = "Wave: " + currentWave.ToString();
 
         // Generate enemies to spawn
         waveValue = currentWave * waveValueModifier;
@@ -63,49 +82,23 @@ public class EnemySpawner : MonoBehaviour
 
         while (waveValue > 0)
         {
-            int randomEnemyID = Random.Range(0, enemies.Count + 1);
+            int randomEnemyID = Random.Range(0, enemies.Count);
             int randomEnemyCost = enemies[randomEnemyID].cost;
 
-            Debug.Log("Random Enemy Id: " + randomEnemyID);
-            Debug.Log("Chosen enemy cost: " + randomEnemyCost);
-
-            if (waveValue > randomEnemyCost)
+            // If the chosen enemy is further up the list then the wave, it should not be spawned
+            if ((waveValue > randomEnemyCost))
             {
+                // If the enemy can be afforded, at it to the list
                 generatedEnemies.Add(enemies[randomEnemyID].enemyPrefab);
                 waveValue -= randomEnemyCost;
             }
             else
             {
+                // Have to break here, so waves might be somewhat inconsistent.
+                // If we do not break here, for some really fucking stupid reason Unity crashes
                 break;
             }
-
-            Debug.Log("The wave value is: " + waveValue);
         }
-
-        Debug.Log("The amount of generated enemies are: " + generatedEnemies.Count);
-        Debug.Log("The wave value is: " + waveValue);
-
-
-        //// While the wave has money to spend
-        //while (waveValue > 0)
-        //{
-        //    Debug.Log($"Wave Value: {waveValue}, Generated Enemies: {generatedEnemies.Count}");
-
-        //    // Generate a random enemy
-        //    int randomEnemyID = Random.Range(0, enemies.Count);
-        //    int randomEnemyCost = enemies[randomEnemyID].cost;
-
-        //    // Check if the enemy can be afforded
-        //    if (waveValue > randomEnemyCost)
-        //    {
-        //        generatedEnemies.Add(enemies[randomEnemyID].enemyPrefab);
-        //        waveValue -= randomEnemyCost;
-        //    }
-        //    else if (waveValue == 0)
-        //    {
-        //        break;
-        //    }
-        //}
 
         // Make sure the list is empty. Then, assign the chosen enemies to the list
         enemiesToSpawn.Clear();
@@ -120,15 +113,18 @@ public class EnemySpawner : MonoBehaviour
             // Check if there are still enemies to spawn
             if (enemiesToSpawn.Count > 0)
             {
-                // Spawn the enemy at the spawn location
-                Instantiate(enemiesToSpawn[0], transform);
-
-                // Remove them from the list and reset the spawntimer
-                enemiesToSpawn.RemoveAt(0);
-                spawnTimer = spawnInterval;
+                Vector3 spawnPoint = GetValidSpawnPoint();
+                if (spawnPoint != Vector3.zero)
+                {
+                    GameObject enemy = Instantiate(enemiesToSpawn[0], spawnPoint, Quaternion.identity, transform);
+                    enemiesToSpawn.RemoveAt(0);
+                    spawnTimer = spawnInterval;
+                    enemiesSpawned++;
+                }
             }
-            else if (waveTimer  <= 0)
+            else if ((waveTimer  <= 0) && (enemiesSpawned - enemiesDead) <= currentWave)
             {
+                // If the timer is up and the player has killed at least a large deal of enemies,
                 // Generate the new wave
                 GenerateWave();
             }
@@ -138,6 +134,24 @@ public class EnemySpawner : MonoBehaviour
             spawnTimer -= Time.deltaTime;
             waveTimer -= Time.deltaTime;
         }
+    }
+
+    private Vector3 GetValidSpawnPoint()
+    {
+        for (int i = 0; i < 30; i++)  // Try up to 30 times to find a valid location
+        {
+            Vector3 randomPoint = Random.insideUnitSphere * spawnRadius + transform.position;
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(randomPoint, out hit, spawnRadius, NavMesh.AllAreas))
+            {
+                Vector3 directionToPlayer = playerTransform.position - hit.position;
+                if (directionToPlayer.magnitude >= minDistanceFromPlayer)
+                {
+                    return hit.position;
+                }
+            }
+        }
+        return Vector3.zero;  // Return zero if a valid point is not found after trying 30 times
     }
 
     #endregion

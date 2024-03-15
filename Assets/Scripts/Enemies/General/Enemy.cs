@@ -111,6 +111,9 @@ public class Enemy : MonoBehaviour
             }
         }
 
+        // Increment the enemiesDead counter
+        spawner.enemiesDead++;
+
         Destroy(gameObject);
     }
 

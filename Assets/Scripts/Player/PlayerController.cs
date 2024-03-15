@@ -582,7 +582,7 @@ public class PlayerController : MonoBehaviour
         stanceSpecialIcons[stancePosition].SetActive(true);
 
         // Spend souls
-        // souls.SpendSouls(souls.GetCharges() * 20);
+        souls.SpendSouls(souls.GetCharges() * 20);
     }
 
     #endregion

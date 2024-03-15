@@ -211,8 +211,7 @@ public class ImpAI : MonoBehaviour
         yield return new WaitForSeconds(attackDuration / 2);
 
         // Shoot a projectile (enemySpawner is its parent), set its position, set the damage and apply a force
-        GameObject projectile = Instantiate(projectilePrefab, enemy.spawner.transform);
-        projectile.transform.position = attackPoint.position;
+        GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, attackPoint.rotation);
         projectile.GetComponent<ImpProjectile>().SetDamage(attackDamage);
         projectile.GetComponent<Rigidbody>().AddForce(transform.forward * attackForce * 100, ForceMode.Force);
     }
@@ -223,8 +222,6 @@ public class ImpAI : MonoBehaviour
 
     private void Retreat()
     {
-        Debug.Log("Retreat has been called");
-
         isRetreating = true;
         hasRetreated = true;
 

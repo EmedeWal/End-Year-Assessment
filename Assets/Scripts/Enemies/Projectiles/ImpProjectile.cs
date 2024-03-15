@@ -3,19 +3,10 @@ using UnityEngine;
 
 public class ImpProjectile : MonoBehaviour
 {
-    [SerializeField] private GameObject fire;
-
     [HideInInspector] public Rigidbody rb;
 
     private float damage;
     private bool active = true;
-
-    private void Awake()
-    {
-        fire.SetActive(false);
-
-        StartCoroutine(StartFire());
-    }
 
     private void Start()
     {
@@ -27,6 +18,9 @@ public class ImpProjectile : MonoBehaviour
         if (!active) return;
 
         GameObject collisionObject = collision.gameObject;
+
+        // Allow this projectile to pass through other enemies
+        if (collisionObject.CompareTag("Enemy")) return;
 
         if (collisionObject.CompareTag("Player"))
         {
@@ -46,13 +40,6 @@ public class ImpProjectile : MonoBehaviour
     public void SetDamage(float newDamage)
     {
         damage = newDamage;
-    }
-
-    private IEnumerator StartFire()
-    {
-        yield return new WaitForEndOfFrame();
-
-        fire.SetActive(true);
     }
 
     private void DestroyInstance()
