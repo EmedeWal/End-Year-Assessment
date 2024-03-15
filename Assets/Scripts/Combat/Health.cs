@@ -11,18 +11,20 @@ public class Health : MonoBehaviour
 
     #region References
 
+    [Header("Player Only")]
+    [SerializeField] private HealthUI healthUI;
+
     [Header("References")]
     [SerializeField] private GameObject canvasPrefab;
     [SerializeField] private Collider objectCollider;
     [SerializeField] private Animator animator;
-    [SerializeField] private HealthUI healthUI;
 
     // This variable is used to store the instance of the prefab
     private GameObject canvas;
 
     // Components
-    private References references;
     private Rigidbody rb;
+    private Enemy enemy;
 
     // Player
     private PlayerController playerController;
@@ -72,12 +74,10 @@ public class Health : MonoBehaviour
     #region Orc Stance
 
     [Header("Stance: Orc")]
-    [SerializeField] private LayerMask collidesWith;
     [SerializeField] private float knockBackDuration;
 
+    [HideInInspector] public float knockBackDamage;
     [HideInInspector] public bool knockedBack;
-
-    private float knockBackDamage;
 
     #endregion
 
@@ -111,11 +111,11 @@ public class Health : MonoBehaviour
         if (isEnemy)
         {
             // Get Components
-            references = GetComponent<References>();
             rb = GetComponent<Rigidbody>();
+            enemy = GetComponent<Enemy>();
 
             // Make a temporary gameObject of the spawner reference
-            GameObject spawnerObject = references.spawner.gameObject;
+            GameObject spawnerObject = enemy.spawner.gameObject;
 
             // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
             canvas = Instantiate(canvasPrefab, spawnerObject.transform);
@@ -124,10 +124,10 @@ public class Health : MonoBehaviour
             healthUI = canvas.GetComponent<HealthUI>();
 
             // Assign Player References
-            playerController = references.playerController;
-            playerTransform = references.playerTransform;
-            playerHealth = references.playerHealth;
-            playerSouls = references.playerSouls;
+            playerController = enemy.playerController;
+            playerTransform = enemy.playerTransform;
+            playerHealth = enemy.playerHealth;
+            playerSouls = enemy.playerSouls;
         }
 
         // Update UI
@@ -137,28 +137,6 @@ public class Health : MonoBehaviour
     private void Update()
     {
         if (isEnemy) HealthBarPosition();
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        // If not knocked back, do not execute this code
-        if (!knockedBack) return;
-
-        // Check if the collider is in the collidesWith layermask
-        if ((collidesWith & (1 << collision.gameObject.layer)) != 0)
-        {
-            Damage(knockBackDamage);
-
-            GameObject collider = collision.gameObject;
-
-            // If the enemy collided with another enemy, damage it too
-            if (collider.gameObject.CompareTag("Enemy"))
-            {
-                // Retrieve its health component and damage the enemy
-                Health eHealth = collider.GetComponent<Health>();
-                eHealth.Damage(knockBackDamage);
-            }
-        }
     }
 
     #endregion
@@ -352,6 +330,7 @@ public class Health : MonoBehaviour
         // Destroy all relevant components
         Destroy(objectCollider);
         Destroy(canvas);
+        Destroy(rb);
         Destroy(this);
     }
 

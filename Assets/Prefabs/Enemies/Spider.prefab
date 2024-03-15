@@ -2423,10 +2423,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8808820856475898363}
   - component: {fileID: 33203112595837450}
-  - component: {fileID: 4005580539016276537}
-  - component: {fileID: 2236955382127606736}
-  - component: {fileID: 6108488304059159028}
+  - component: {fileID: 8449330279875931354}
+  - component: {fileID: 9021338017144268875}
   - component: {fileID: 4815631687875623207}
+  - component: {fileID: 6108488304059159028}
   - component: {fileID: 19660142240775866}
   m_Layer: 9
   m_Name: Spider
@@ -2479,7 +2479,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!65 &4005580539016276537
+--- !u!65 &8449330279875931354
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2498,9 +2498,9 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 1, z: 4}
+  m_Size: {x: 3, y: 1, z: 3}
   m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &2236955382127606736
+--- !u!114 &9021338017144268875
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2509,39 +2509,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 5576891758463423469}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06b72272364dd434b9ff5da602f07f98, type: 3}
+  m_Script: {fileID: 11500000, guid: 367b97a512a38244a916741c91775855, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spawner: {fileID: 0}
+  enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
   playerTransform: {fileID: 0}
   playerHealth: {fileID: 0}
   playerSouls: {fileID: 0}
---- !u!114 &6108488304059159028
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5576891758463423469}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3f23ada633722844a6a944c29fcf061, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackPoint: {fileID: 8672879705350913583}
-  animator: {fileID: 7461846953144706116}
-  playerLayer:
+  collidesWith:
     serializedVersion: 2
-    m_Bits: 256
-  player: {fileID: 0}
-  state: 0
-  attackSize: {x: 1, y: 1, z: 2}
-  attackDuration: 2
-  attackDamage: 5
-  attackRange: 3
-  attackCD: 3
-  rotationSpeed: 3
+    m_Bits: 640
   deathDelay: 2
 --- !u!114 &4815631687875623207
 MonoBehaviour:
@@ -2585,10 +2564,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
-  objectCollider: {fileID: 0}
-  animator: {fileID: 7461846953144706116}
   healthUI: {fileID: 0}
+  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 8449330279875931354}
+  animator: {fileID: 7461846953144706116}
   canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 50
   startingHealth: 50
@@ -2597,11 +2576,35 @@ MonoBehaviour:
   invincible: 0
   bleedIntervals: 0.8
   specialHeal: 2
-  collidesWith:
-    serializedVersion: 2
-    m_Bits: 640
   knockBackDuration: 0.2
+  knockBackDamage: 0
   knockedBack: 0
+--- !u!114 &6108488304059159028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5576891758463423469}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3f23ada633722844a6a944c29fcf061, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackPoint: {fileID: 8672879705350913583}
+  animator: {fileID: 7461846953144706116}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  player: {fileID: 0}
+  state: 0
+  attackSize: {x: 1, y: 1, z: 2}
+  attackDuration: 2.5
+  attackDamage: 5
+  attackRange: 3
+  attackCD: 3
+  rotationSpeed: 3
+  deathDelay: 2
 --- !u!195 &19660142240775866
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2611,7 +2614,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5576891758463423469}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 2
   m_Speed: 8
   m_Acceleration: 8
   avoidancePriority: 50

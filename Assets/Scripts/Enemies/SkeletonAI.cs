@@ -13,8 +13,8 @@ public class SkeletonAI : MonoBehaviour
 
     [HideInInspector] public Transform player;
 
-    private References references;
     private NavMeshAgent agent;
+    private Enemy enemy;
 
     #endregion
 
@@ -61,10 +61,10 @@ public class SkeletonAI : MonoBehaviour
     private void Start()
     {
         // Set up all references
-        references = GetComponent<References>();
         agent = GetComponent<NavMeshAgent>();
+        enemy = GetComponent<Enemy>();
 
-        player = references.playerTransform;
+        player = enemy.playerTransform;
     }
 
     private void Update()
@@ -224,7 +224,7 @@ public class SkeletonAI : MonoBehaviour
         // Play the animation and remove enemy intelligence
         animator.SetTrigger("Death");
 
-        references.Die(deathDelay);
+        enemy.Die();
 
         Destroy(this);
     }

@@ -1106,9 +1106,9 @@ GameObject:
   - component: {fileID: 2183621556495727823}
   - component: {fileID: 6625971246024854383}
   - component: {fileID: 595508343507091746}
-  - component: {fileID: 2650917395365036528}
-  - component: {fileID: 5028792203554100145}
+  - component: {fileID: 2176869448803523832}
   - component: {fileID: 9121345064740217676}
+  - component: {fileID: 5028792203554100145}
   - component: {fileID: 8021781040299788388}
   m_Layer: 9
   m_Name: Skeleton
@@ -1184,7 +1184,7 @@ CapsuleCollider:
   m_Height: 6
   m_Direction: 1
   m_Center: {x: 0, y: 3, z: 0}
---- !u!114 &2650917395365036528
+--- !u!114 &2176869448803523832
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1193,40 +1193,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 4682828495929238245}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06b72272364dd434b9ff5da602f07f98, type: 3}
+  m_Script: {fileID: 11500000, guid: 367b97a512a38244a916741c91775855, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spawner: {fileID: 0}
+  enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
   playerTransform: {fileID: 0}
   playerHealth: {fileID: 0}
   playerSouls: {fileID: 0}
---- !u!114 &5028792203554100145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4682828495929238245}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1bf30fdfb731cd48937b6ee4681f187, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackPoint: {fileID: 1333079530877925728}
-  animator: {fileID: 3700471490037644492}
-  playerLayer:
+  collidesWith:
     serializedVersion: 2
-    m_Bits: 256
-  player: {fileID: 0}
-  state: 0
-  attackSize: {x: 0.5, y: 2, z: 3}
-  attackDuration: 1.5
-  attackDamage: 5
-  attackRange: 3
-  attackCD: 3
-  rotationSpeed: 2
-  deathDelay: 1
+    m_Bits: 640
+  deathDelay: 1.5
 --- !u!114 &9121345064740217676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1269,10 +1248,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
-  objectCollider: {fileID: 0}
-  animator: {fileID: 3700471490037644492}
   healthUI: {fileID: 0}
+  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 595508343507091746}
+  animator: {fileID: 3700471490037644492}
   canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 100
   startingHealth: 100
@@ -1281,11 +1260,35 @@ MonoBehaviour:
   invincible: 0
   bleedIntervals: 0.8
   specialHeal: 2
-  collidesWith:
-    serializedVersion: 2
-    m_Bits: 640
   knockBackDuration: 0.2
+  knockBackDamage: 0
   knockedBack: 0
+--- !u!114 &5028792203554100145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4682828495929238245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1bf30fdfb731cd48937b6ee4681f187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackPoint: {fileID: 1333079530877925728}
+  animator: {fileID: 3700471490037644492}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  player: {fileID: 0}
+  state: 0
+  attackSize: {x: 0.5, y: 2, z: 3}
+  attackDuration: 1.5
+  attackDamage: 5
+  attackRange: 3
+  attackCD: 3
+  rotationSpeed: 2
+  deathDelay: 1.5
 --- !u!195 &8021781040299788388
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1295,7 +1298,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 4682828495929238245}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 2
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
