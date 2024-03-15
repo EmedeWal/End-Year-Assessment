@@ -1206,6 +1206,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 640
   deathDelay: 1.5
+  isImp: 0
+  explosionPrefab: {fileID: 0}
+  explosionDamage: 0
+  explosionRadius: 0
 --- !u!114 &9121345064740217676
 MonoBehaviour:
   m_ObjectHideFlags: 0

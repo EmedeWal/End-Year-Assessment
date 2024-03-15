@@ -2522,6 +2522,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 640
   deathDelay: 2
+  isImp: 0
+  explosionPrefab: {fileID: 0}
+  explosionDamage: 0
+  explosionRadius: 0
 --- !u!114 &4815631687875623207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2586,7 +2590,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5576891758463423469}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3f23ada633722844a6a944c29fcf061, type: 3}
   m_Name: 
