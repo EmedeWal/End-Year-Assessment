@@ -26,7 +26,8 @@ public class ImpAI : MonoBehaviour
     {
         Idle,
         Chase,
-        Attack
+        Attack,
+        Retreat
     }
 
     public State state = State.Chase;
@@ -46,12 +47,15 @@ public class ImpAI : MonoBehaviour
     [SerializeField] private float attackCD;
 
     [Header("Variables: Other")]
+    [SerializeField] private float safeDistance;
     [SerializeField] private float rotationSpeed;
-    [SerializeField] private float deathDelay;
 
     private Coroutine attackReset;
     private bool canAttack = true;
     private bool isAttacking;
+
+    private bool hasRetreated;
+    private bool isRetreating;
 
     #endregion
 
@@ -70,17 +74,35 @@ public class ImpAI : MonoBehaviour
 
     private void Update()
     {
+        // If the enemy isRetreating, check whether it has reached its destination
+        if (isRetreating)
+        {
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            {
+                if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
+                {
+                    StartCoroutine(TurnToPlayer()); 
+                }
+            }
+        }
+
+        // If the enemy is attacking or retreating, return
+        if (isAttacking || isRetreating) return;
+
         // Set animations
         animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
 
-        // Store the result of the range check
-        bool inRange = InRange();
+        // Store the result of the distance check in a variable
+        float distance = DistanceToPlayer();
 
-        // If the enemy is attacking, stop checking stuff
-        if (isAttacking) return;
+        // Check if the player is inRange.
+        bool inRange = distance <= attackRange;
+
+        // If the player is very close, the enemy should run away and reposition
+        if (distance <= safeDistance && !hasRetreated) UpdateBehaviour(State.Retreat);
 
         // If the player is in the attackRange and if the enemy can attack
-        if (inRange && canAttack) UpdateBehaviour(State.Attack);
+        else if (inRange && canAttack) UpdateBehaviour(State.Attack);
 
         // If the player is in the attackRange, the enemy should idle
         else if (inRange) UpdateBehaviour(State.Idle);
@@ -113,14 +135,17 @@ public class ImpAI : MonoBehaviour
             case State.Attack:
                 Attack();
                 break;
+
+            case State.Retreat:
+                Retreat();
+                break;
         }
     }
 
-    private bool InRange()
+    private float DistanceToPlayer()
     {
-        // Calculate the distance to the player and check if the player is in the attack range
-        if (Vector3.Distance(player.position, transform.position) <= attackRange) return true;
-        else return false;
+        // Calculate the distance to the player
+        return Vector3.Distance(player.position, transform.position);
     }
 
     #endregion
@@ -196,6 +221,37 @@ public class ImpAI : MonoBehaviour
 
     //
 
+    private void Retreat()
+    {
+        Debug.Log("Retreat has been called");
+
+        isRetreating = true;
+        hasRetreated = true;
+
+        Vector3 retreatDirection = transform.position - player.position;
+        Vector3 retreatPosition = transform.position + retreatDirection.normalized * Random.Range(safeDistance, safeDistance * 2);
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(retreatPosition, out hit, safeDistance * 2, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+
+        // Cooldown before next possible retreat
+        Invoke(nameof(ResetRetreat), 5f);
+    }
+
+    private void ResetRetreat()
+    {
+        hasRetreated = false;
+    }
+
+    private IEnumerator TurnToPlayer()
+    {
+        UpdateBehaviour(State.Idle);
+
+        yield return new WaitForSeconds(1);
+
+        isRetreating = false;
+    }
+
     #endregion
 
     //
@@ -217,6 +273,9 @@ public class ImpAI : MonoBehaviour
     {
         // Play the animation and remove enemy intelligence
         animator.SetTrigger("Death");
+
+        // MAke sure the enemy stops moving
+        agent.SetDestination(transform.position);
 
         enemy.Die();
 

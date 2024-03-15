@@ -26,6 +26,7 @@ public class Enemy : MonoBehaviour
 
     [Header("Imp Specific")]
     [SerializeField] private bool isImp;
+    [SerializeField] private GameObject explosionPrefab;
     [SerializeField] private float explosionDamage;
     [SerializeField] private float explosionRadius;
 
@@ -99,6 +100,8 @@ public class Enemy : MonoBehaviour
         if (isImp)
         {
             Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+            GameObject explosion = Instantiate(explosionPrefab, spawner.transform);
+            explosion.transform.position = transform.position + new Vector3(0, 1, 0);
             
             foreach (Collider hit  in hits)
             {

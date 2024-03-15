@@ -24,9 +24,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 698055952062738644}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.0425, y: 0.06999993, z: 4.105}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2793706756123314408}
@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 8272920098328494603}
   - component: {fileID: 8271682602553298944}
   - component: {fileID: 8914662334924207182}
+  - component: {fileID: 4383133276813536492}
   m_Layer: 9
   m_Name: Imp
   m_TagString: Enemy
@@ -140,7 +141,11 @@ MonoBehaviour:
   collidesWith:
     serializedVersion: 2
     m_Bits: 640
-  deathDelay: 1.5
+  deathDelay: 3
+  isImp: 1
+  explosionPrefab: {fileID: 100000, guid: 15ca5b8fa431dc04291a79cadcd19874, type: 3}
+  explosionDamage: 25
+  explosionRadius: 5
 --- !u!114 &8271682602553298944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,13 +161,13 @@ MonoBehaviour:
   stagger:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5080532581376076192}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 8914662334924207182}
+        m_TargetAssemblyTypeName: ImpAI, Assembly-CSharp
+        m_MethodName: Stagger
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -171,13 +176,13 @@ MonoBehaviour:
   death:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5080532581376076192}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 8914662334924207182}
+        m_TargetAssemblyTypeName: ImpAI, Assembly-CSharp
+        m_MethodName: Death
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -190,7 +195,7 @@ MonoBehaviour:
   canvasOffset: {x: 0, y: 6, z: 0}
   maxHealth: 50
   startingHealth: 50
-  staggerThreshold: 5
+  staggerThreshold: 4
   currentHealth: 0
   invincible: 0
   bleedIntervals: 0.8
@@ -217,13 +222,36 @@ MonoBehaviour:
     m_Bits: 256
   player: {fileID: 0}
   state: 1
-  projectilePrefab: {fileID: 0}
-  attackDuration: 0
+  projectilePrefab: {fileID: 4620732746799011094, guid: e424201ff6387d141b565a04d8217b0e, type: 3}
+  attackDuration: 1.5
   attackDamage: 5
-  attackRange: 0
-  attackCD: 0
-  rotationSpeed: 0
-  deathDelay: 0
+  attackRange: 15
+  attackForce: 10
+  attackCD: 3
+  rotationSpeed: 3
+  deathDelay: 3
+--- !u!195 &4383133276813536492
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5080532581376076192}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 1
+  m_Speed: 8
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 200
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1001 &6647735857907455622
 PrefabInstance:
   m_ObjectHideFlags: 0
