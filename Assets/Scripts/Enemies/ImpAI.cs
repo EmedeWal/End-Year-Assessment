@@ -46,16 +46,19 @@ public class ImpAI : MonoBehaviour
     [SerializeField] private float attackForce;
     [SerializeField] private float attackCD;
 
-    [Header("Variables: Other")]
-    [SerializeField] private float safeDistance;
-    [SerializeField] private float rotationSpeed;
-
     private Coroutine attackReset;
     private bool canAttack = true;
     private bool isAttacking;
 
+    [Header("Variables: Retreating")]
+    [SerializeField] private float retreatCD;
+    [SerializeField] private float safeDistance;
+
     private bool hasRetreated;
     private bool isRetreating;
+
+    [Header("Variables: Other")]
+    [SerializeField] private float rotationSpeed;
 
     #endregion
 
@@ -74,18 +77,6 @@ public class ImpAI : MonoBehaviour
 
     private void Update()
     {
-        // If the enemy isRetreating, check whether it has reached its destination
-        if (isRetreating)
-        {
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-            {
-                if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
-                {
-                    StartCoroutine(TurnToPlayer()); 
-                }
-            }
-        }
-
         // If the enemy is attacking or retreating, return
         if (isAttacking || isRetreating) return;
 
@@ -222,8 +213,8 @@ public class ImpAI : MonoBehaviour
 
     private void Retreat()
     {
-        isRetreating = true;
         hasRetreated = true;
+        isRetreating = true;
 
         Vector3 retreatDirection = transform.position - player.position;
         Vector3 retreatPosition = transform.position + retreatDirection.normalized * Random.Range(safeDistance, safeDistance * 2);
@@ -232,19 +223,23 @@ public class ImpAI : MonoBehaviour
         if (NavMesh.SamplePosition(retreatPosition, out hit, safeDistance * 2, NavMesh.AllAreas)) agent.SetDestination(hit.position);
 
         // Cooldown before next possible retreat
-        Invoke(nameof(ResetRetreat), 5f);
+        Invoke(nameof(RetreatReset), retreatCD);
+
+        StartCoroutine(RetreatTracking());
     }
 
-    private void ResetRetreat()
+    private void RetreatReset()
     {
         hasRetreated = false;
     }
 
-    private IEnumerator TurnToPlayer()
+    private IEnumerator RetreatTracking()
     {
+        yield return new WaitForSeconds(retreatCD / 3);
+
         UpdateBehaviour(State.Idle);
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
 
         isRetreating = false;
     }
@@ -257,15 +252,17 @@ public class ImpAI : MonoBehaviour
 
     public void Stagger()
     {
+        animator.SetTrigger("Stagger");
+
         // Reset AttackReset()
         if (attackReset != null && !isAttacking)
         {
-            animator.SetTrigger("Stagger");
-
+            canAttack = false;
             StopCoroutine(attackReset);
             attackReset = StartCoroutine(AttackReset());
         }
     }
+
     public void Death()
     {
         // Play the animation and remove enemy intelligence

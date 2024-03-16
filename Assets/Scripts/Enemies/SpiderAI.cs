@@ -184,7 +184,7 @@ public class SpiderAI : MonoBehaviour
     private IEnumerator ApplyDamage()
     {
         // Apply the damage halfway through the animation
-        yield return new WaitForSeconds(attackDuration / 2);
+        yield return new WaitForSeconds((attackDuration / 2) - 0.4f);
 
         Collider[] hits = Physics.OverlapBox(attackPoint.position, attackSize);
 
@@ -193,7 +193,7 @@ public class SpiderAI : MonoBehaviour
             if (hit.gameObject.CompareTag("Player"))
             {
                 Health pHealth = hit.GetComponent<Health>();
-                pHealth.Damage(attackDamage);
+                if (pHealth != null) pHealth.Damage(attackDamage);
             }
         }
     }
@@ -213,6 +213,7 @@ public class SpiderAI : MonoBehaviour
         // Reset AttackReset()
         if (attackReset != null && !isAttacking)
         {
+            canAttack = false;
             StopCoroutine(attackReset);
             attackReset = StartCoroutine(AttackReset());
         }

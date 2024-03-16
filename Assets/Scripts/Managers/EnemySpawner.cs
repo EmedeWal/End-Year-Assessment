@@ -19,39 +19,42 @@ public class EnemySpawner : MonoBehaviour
 
     #region Wave System
 
-    [Header("Wave System")]
+    [Header("Setup")]
+    [SerializeField] private bool active;
+    [SerializeField] private List<EnemyToSpawn> enemies = new List<EnemyToSpawn>();
 
+    [Header("References")]
     [SerializeField] private TextMeshProUGUI waveText;
 
-    // Setup
-    [SerializeField] private List<EnemyToSpawn> enemies = new List<EnemyToSpawn>();
-    [SerializeField] private int waveValueModifier = 10;
-    private int currentWave = 0;
-    private int waveValue;
+    [Header("Spawn Location")]
+    [SerializeField] private float minDistanceFromPlayer;
+    [SerializeField] private float spawnRadius;
 
-    // Spawning
+    [Header("Modifiers")]
+    [SerializeField] private int waveValueBase;
+    [SerializeField] private int waveValueModifier;
     [SerializeField] private float waveDuration;
+    [SerializeField] private float waveDurationIncrement;
+    private int waveValue;
 
     private List<GameObject> enemiesToSpawn = new List<GameObject>();
     private float waveTimer;
     private float spawnTimer;
     private float spawnInterval;
 
-    // Keep track of the enemies in the scene
+    // Keep track of relevant information
     [HideInInspector] public int enemiesDead;
     private int enemiesSpawned;
-
-    [SerializeField] private float minDistanceFromPlayer;
-    [SerializeField] private float spawnRadius;
+    private int currentWave = 0;
 
     private void Start()
     {
-        GenerateWave();
+        if (active) GenerateWave();
     }
 
     private void Update()
     {
-        SpawnEnemies();
+        if (active) SpawnEnemies();
     }
 
     private void GenerateWave()
@@ -62,12 +65,13 @@ public class EnemySpawner : MonoBehaviour
 
         // Increment currentWave
         currentWave++;
+        waveDuration += waveDurationIncrement;
 
         // Display the current wave on the UI
         waveText.text = "Wave: " + currentWave.ToString();
 
         // Generate enemies to spawn
-        waveValue = currentWave * waveValueModifier;
+        waveValue = (currentWave * waveValueModifier) + waveValueBase;
         GenerateEnemies();
 
         // Calulcate the inverval at which enemies should be spawned
@@ -122,13 +126,11 @@ public class EnemySpawner : MonoBehaviour
                     enemiesSpawned++;
                 }
             }
-            else if ((waveTimer  <= 0) && (enemiesSpawned - enemiesDead) <= currentWave)
-            {
-                // If the timer is up and the player has killed at least a large deal of enemies,
-                // Generate the new wave
-                GenerateWave();
-            }
+            // If  the player has killed all enemies, generate the new wave
+            else if ((waveTimer  <= 0) && (enemiesSpawned == enemiesDead)) GenerateWave();
         }
+
+        // Else, decrease the timers
         else
         {
             spawnTimer -= Time.deltaTime;

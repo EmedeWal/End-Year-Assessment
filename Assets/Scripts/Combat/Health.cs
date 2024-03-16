@@ -1,8 +1,6 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
@@ -42,7 +40,6 @@ public class Health : MonoBehaviour
     [SerializeField] private Vector3 canvasOffset;
 
     [SerializeField] private float maxHealth;
-    [SerializeField] private float startingHealth;
 
     [SerializeField] private float staggerThreshold;
 
@@ -60,10 +57,10 @@ public class Health : MonoBehaviour
     #region Vampire Stance
 
     [Header("Stance: Vampire")]
-    [SerializeField] private float bleedIntervals;
     [SerializeField] private float specialHeal;
 
     private Coroutine currentCoroutine;
+    private float bleedIntervals = 0.8f;
     private bool isCursed;
     private bool isBleeding;
 
@@ -73,10 +70,6 @@ public class Health : MonoBehaviour
 
     #region Orc Stance
 
-    [Header("Stance: Orc")]
-    [SerializeField] private float knockBackDuration;
-
-    [HideInInspector] public float knockBackDamage;
     [HideInInspector] public bool knockedBack;
 
     #endregion
@@ -105,7 +98,7 @@ public class Health : MonoBehaviour
     private void Start()
     {
         // Initiliase the health settings
-        currentHealth = startingHealth;
+        currentHealth = maxHealth;
 
         // Set up some references (Enemies only)
         if (isEnemy)
@@ -259,15 +252,8 @@ public class Health : MonoBehaviour
 
     #region Orc Stance
 
-    public void KnockBack(float damage, float force, int charges)
+    public void KnockBack(float damage, float force, float duration)
     {
-        /* Do not ask what on earth this random calculation is supposed to do.
-         * It just makes the force less exponential and thus, feel better */
-        if (charges > 1) force = force - ((charges - 1) * 8);
-
-        // Set the knockBackDamage
-        knockBackDamage = damage;
-
         // The enemy is knocked back. Set the icon
         knockedBack = true;
         healthUI.SetStatusIconActive(2, true);
@@ -279,7 +265,7 @@ public class Health : MonoBehaviour
         rb.AddForce(knockbackDirection * force, ForceMode.Impulse);
 
         // After a little while, stop the knockBack and reset the variable
-        Invoke(nameof(ResetKnockBack), knockBackDuration * charges);
+        Invoke(nameof(ResetKnockBack), duration);
     }
 
     private void ResetKnockBack()

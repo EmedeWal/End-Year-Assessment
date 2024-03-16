@@ -2498,7 +2498,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 1, z: 3}
+  m_Size: {x: 3.5, y: 1, z: 3.5}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &9021338017144268875
 MonoBehaviour:
@@ -2574,14 +2574,10 @@ MonoBehaviour:
   animator: {fileID: 7461846953144706116}
   canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 50
-  startingHealth: 50
   staggerThreshold: 10
   currentHealth: 0
   invincible: 0
-  bleedIntervals: 0.8
   specialHeal: 2
-  knockBackDuration: 0.2
-  knockBackDamage: 0
   knockedBack: 0
 --- !u!114 &6108488304059159028
 MonoBehaviour:
@@ -2604,8 +2600,8 @@ MonoBehaviour:
   state: 0
   attackSize: {x: 1, y: 1, z: 2}
   attackDuration: 2.5
-  attackDamage: 5
-  attackRange: 3
+  attackDamage: 10
+  attackRange: 4
   attackCD: 3
   rotationSpeed: 3
   deathDelay: 2
@@ -2618,7 +2614,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5576891758463423469}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 2
+  m_Radius: 2.5
   m_Speed: 8
   m_Acceleration: 8
   avoidancePriority: 50
@@ -2629,7 +2625,7 @@ NavMeshAgent:
   m_AutoRepath: 1
   m_Height: 1
   m_BaseOffset: 0
-  m_WalkableMask: 4294967295
+  m_WalkableMask: 1
   m_ObstacleAvoidanceType: 4
 --- !u!1 &5611248341469283444
 GameObject:

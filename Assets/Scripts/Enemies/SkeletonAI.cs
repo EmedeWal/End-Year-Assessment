@@ -193,7 +193,7 @@ public class SkeletonAI : MonoBehaviour
             if (hit.gameObject.CompareTag("Player"))
             {
                 Health pHealth = hit.GetComponent<Health>();
-                pHealth.Damage(attackDamage);
+                if (pHealth != null) pHealth.Damage(attackDamage);
             }
         }
     }
@@ -215,6 +215,7 @@ public class SkeletonAI : MonoBehaviour
         {
             animator.SetTrigger("Stagger");
 
+            canAttack = false;
             StopCoroutine(attackReset);
             attackReset = StartCoroutine(AttackReset());
         }

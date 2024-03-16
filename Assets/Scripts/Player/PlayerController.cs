@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
 
     #region Variables
 
+    public UnityEvent die;
     private Coroutine invincibleCoroutine;
 
     #endregion
@@ -52,17 +54,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Color[] stanceColors;
 
     [Header("Stance: Vampire - Default")]
-    [SerializeField] private float bleedBaseDamage;
+    [SerializeField] private float bleedDamage;
     [SerializeField] private float bleedTicks;
 
     [Header("Stance: Vampire - Special")]
     [SerializeField] private Image vampireSpecialImage;
+    [SerializeField] private float vampireSpecialNerf;
     [SerializeField] private float vampireSpecialDuration;
     [SerializeField] private float vampireSpecialRange;
 
     [Header("Stance: Orc - Default")]
-    [SerializeField] private float knockBackBaseDamage;
-    [SerializeField] private float knockBackForce;
+    public float knockbackDamage;
+    [SerializeField] private float knockbackForce;
+    [SerializeField] private float knockbackDuration;
 
     [Header("Stance: Orc - Special")]
     [SerializeField] private float orcSpecialDuration;
@@ -159,6 +163,9 @@ public class PlayerController : MonoBehaviour
 
         // Set objects inactive
         playerCanvas.SetActive(false);
+
+        // Set the cursor invisible
+        Cursor.visible = false;
     }
 
     private void Start()
@@ -367,28 +374,24 @@ public class PlayerController : MonoBehaviour
                 // Retrieve the health script on the enemy
                 Health eHealth = hit.GetComponent<Health>();
 
-                // Retrieve the current Soul Charges
-                int charges = souls.GetCharges();
-
                 // Make a variable for damage handling, to avoid ridiculous stacking from the Ghost stance
                 float damage = attackDamage;
 
-                /* Check for active stances, and handle additional logic accordingly
-                 * Check if the player has charges. If not, do not bother with stance logic */
-                if (charges != 0)
+                // Check for active stances, and handle additional logic accordingly
+                // Check if the vampire stance is active. If so, inflict bleed upon the enemy
+                if (currentStance == "Vampire") eHealth.Bleed(bleedDamage, bleedTicks, false);
+
+                // OLD ORC STANCE HERE
+                else if (currentStance == "Orc") eHealth.KnockBack(knockbackDamage, knockbackForce, knockbackDuration);
+
+                // Check if the orc stance is active. If so, knock the enemy backwards
+                //else if (currentStance == "Orc") eHealth.stagger;
+
+                // Check if the ghost stance is active. If so, deal more damage at the cost of health
+                else
                 {
-                    // Check if the vampire stance is active. If so, inflict bleed upon the enemy
-                    if (currentStance == "Vampire") eHealth.Bleed(bleedBaseDamage * charges, bleedTicks, false);
-
-                    // Check if the orc stance is active. If so, knock the enemy backwards
-                    if (currentStance == "Orc") eHealth.KnockBack(knockBackBaseDamage * charges, knockBackForce * charges, charges);
-
-                    // Check if the ghost stance is active. If so, deal more damage at the cost of health
-                    if (currentStance == "Ghost")
-                    {
-                        damage = damageIncrement * charges;
-                        health.Damage(healthTax * charges);
-                    }
+                    damage = damageIncrement;
+                    health.Damage(healthTax);
                 }
 
                 // Apply damage to the enemy
@@ -454,9 +457,9 @@ public class PlayerController : MonoBehaviour
                 Health eHealth = hit.GetComponent<Health>();
 
                 /* Inflict bleed upon all enemies hit. 
-                 * The damage is half as a normal bleed, but the duration depends on charges
-                 * Two bleed ticks per charge */
-                eHealth.Bleed(bleedBaseDamage * charges / baseTicks, ticks, true);
+                 * The damage is much smaller than a normal bleed, but the duration depends on charges 
+                 * Two bleed ticks per charge. (max 10 ticks of 1 damage) */
+                eHealth.Bleed(bleedDamage - vampireSpecialNerf, ticks, true);
             }
         }
 
@@ -659,6 +662,16 @@ public class PlayerController : MonoBehaviour
 
         // If a coroutine is assigned, unassign it
         if (invincibleCoroutine != null) invincibleCoroutine = null;
+    }
+
+    public void Die()
+    {
+        animator.SetTrigger("Death");
+
+        die?.Invoke();
+
+        rb.velocity = Vector3.zero;
+        Destroy(this);
     }
 
     #endregion

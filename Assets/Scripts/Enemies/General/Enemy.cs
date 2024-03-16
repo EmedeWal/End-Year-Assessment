@@ -53,7 +53,7 @@ public class Enemy : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        float damage = enemyHealth.knockBackDamage;
+        float damage = playerController.knockbackDamage;
         bool knockedBack = enemyHealth.knockedBack;
 
         // If not knocked back, do not execute this code
