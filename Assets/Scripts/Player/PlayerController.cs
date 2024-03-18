@@ -8,151 +8,200 @@ using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
-    #region References
+    #region !SETUP!
 
-    [Header("References: Objects")]
+
+
+    #region REFERENCES
+
+    [Header("REFERENCES")]
+
+    #region GameObjects
+
+    [Header("References: GameObjects")]
     [SerializeField] private GameObject playerCanvas;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
-    
+
     private Rigidbody rb;
     private Health health;
     private Souls souls;
+    #endregion
 
     #endregion
 
-    //
+    // End of References
 
-    #region Variables
+    #region VARIABLES
 
-    public UnityEvent die;
-    private Coroutine invincibleCoroutine;
-
-    #endregion
-
-    //
+    [Header("VARIABLES")]
 
     #region Souls
 
     [Header("Souls")]
     [SerializeField] private int soulsGain;
+    #endregion
+
+    #region Other
+
+    [Header("Other")]
+    public UnityEvent die;
+    private Coroutine invincibleCoroutine;
+    #endregion
 
     #endregion
 
-    //
+    // End of Variables
 
-    #region Stances
+    #region STANCES
 
-    [Header("Stance: General")]
+    [Header("STANCES")]
+
+    #region General
+
+    [Header("General")]
     [SerializeField] private string[] stances;
+    [SerializeField] private Renderer swordRenderer;
 
     public int stancePosition = 0;
     private string currentStance;
+    #endregion
 
-    [Header("Stances: UI")]
+    #region UI
+
+    [Header("UI")]
     [SerializeField] private GameObject[] stanceIcons;
     [SerializeField] private Color[] stanceColors;
+    #endregion
 
-    [Header("Stance: Vampire - Default")]
+    #region Vampire Stance
+
+    [Header("Vampire Stance")]
     [SerializeField] private float bleedDamage;
     [SerializeField] private float bleedTicks;
 
-    [Header("Stance: Vampire - Special")]
-    [SerializeField] private Image vampireSpecialImage;
+    [SerializeField] private Image vampireSpecialGFX;
     [SerializeField] private float vampireSpecialNerf;
     [SerializeField] private float vampireSpecialDuration;
     [SerializeField] private float vampireSpecialRange;
+    #endregion
 
-    [Header("Stance: Orc - Default")]
+    #region Orc Stance
+
+    [Header("Orc Stance")]
     public float knockbackDamage;
     [SerializeField] private float knockbackForce;
     [SerializeField] private float knockbackDuration;
-
-    [Header("Stance: Orc - Special")]
     [SerializeField] private float orcSpecialDuration;
+    #endregion
 
-    [Header("Stance: Ghost - Default")]
+    #region Ghost Stance
+
+    [Header("Ghost Stance")]
     [SerializeField] private float damageIncrement;
     [SerializeField] private float healthTax;
-
-    [Header("Stance: Ghost - Special")]
     [SerializeField] private float damageIncrease;
     [SerializeField] private float ghostSpecialDuration;
 
     [HideInInspector] public List<Health> markedEnemies = new List<Health>();
 
     private bool ghostSpecialActive;
+    #endregion
 
     #endregion
 
-    //
+    // End of Stances
 
-    #region Movement
+    #region MOVEMENT
 
-    [Header("Movement Variables")]
+    [Header("MOVEMENT")]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotationSpeed;
 
     private Vector2 move;
     private bool canMove = true;
-
+    private bool canRotate = true;
     #endregion
 
-    //
+    // End of Movement
 
-    #region Attacking
+    #region ATTACKING
 
-    [Header("Attack Variables")]
-    [SerializeField] private float attackOffset;
+    [Header("ATTACKING")]
+
+    [SerializeField] private Vector3 attackSize;
+    [SerializeField] private float attackDamage;
     [SerializeField] private float attackSpeed;
-    [SerializeField] private float attackRange;
-    [SerializeField] private float damageDelay;
+    [SerializeField] private float attackChargeTime;
+    [SerializeField] private float movementDelay;
 
-    public float attackDamage;
-
+    private Coroutine attackReset;
+    private Coroutine comboReset;
+    private int comboCounter = 0;
     private bool canAttack = true;
-
+    private bool isAttacking = false;
     #endregion
 
-    //
+    // End of Attacking
 
-    #region Special
+    #region SPECIAL
 
-    [Header("Special: UI")]
+    [Header("SPECIAL")]
+
+    #region User Interface
+    [Header("User Interface")]
     [SerializeField] private GameObject[] stanceSpecialIcons;
     [SerializeField] private TextMeshProUGUI specialDurationText;
     [SerializeField] private Image specialDurationImage;
+    #endregion
+
+    #region Variables
 
     [HideInInspector] public bool specialActive;
 
     private float specialDuration;
     private float specialCountdown;
+    #endregion
 
     #endregion
 
-    //
+    // End of Special
 
-    #region Dodging
+    #region DASHING
 
-    [Header("Dodging: Variables")]
-    [SerializeField] private float dodgeForce;
-    [SerializeField] private float dodgeCooldown;
-    [SerializeField] private float dodgeDuration;
+    [Header("Dashing")]
 
-    [Header("Dodging: UI")]
-    [SerializeField] private TextMeshProUGUI cooldownTextDodge;
-    [SerializeField] private Image cooldownImageDodge;
+    #region User Interface
 
-    private Coroutine dodgeCoroutine;
-    private float dodgeCooldownTimer;
-    private bool canDodge = true;
-    private bool isDodging;
+    [Header("User Interface")]
+    [SerializeField] private TextMeshProUGUI cooldownTextDash;
+    [SerializeField] private Image cooldownImageDash;
+    #endregion
+
+    #region Variables
+
+    [Header("Variables")]
+    [SerializeField] private float dashForce;
+    [SerializeField] private float dashCooldown;
+    [SerializeField] private float dashDuration;
+
+    private Coroutine dashCoroutine;
+    private float dashCooldownTimer;
+    private bool isDashing = false;
+    private bool canDash = true;
+    #endregion
 
     #endregion
 
-    // 
+    // End of Dodging
 
-    #region Default
+    #endregion
+
+    // END OF SETUP
+
+    #region !EXECUTION!
+
+    #region DEFAULT
 
     private void Awake()
     {
@@ -164,7 +213,7 @@ public class PlayerController : MonoBehaviour
         // Set objects inactive
         playerCanvas.SetActive(false);
 
-        // Set the cursor invisible
+        // Make the cursor invisible
         Cursor.visible = false;
     }
 
@@ -174,8 +223,8 @@ public class PlayerController : MonoBehaviour
         stancePosition--;
 
         // Set the cooldown text inactive and make sure the images value is correct
-        cooldownTextDodge.gameObject.SetActive(false);
-        cooldownImageDodge.fillAmount = 0;
+        cooldownTextDash.gameObject.SetActive(false);
+        cooldownImageDash.fillAmount = 0;
 
         specialDurationText.gameObject.SetActive(false);
         specialDurationImage.fillAmount = 1f;
@@ -186,38 +235,21 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Move the player, if he is allowed to. If not, make sure he stands still
-        if (canMove) Move();
-        else rb.velocity = Vector3.zero;
+        // Check if the player should move
+        if (!isAttacking && !isDashing) Move();
 
         // Handle dodge cooldown
-        if (!canDodge) DodgeCooldown(dodgeCooldown);
+        if (!canDash) DashCooldown(dashCooldown);
 
         // Handle special timer
         if (specialActive) SpecialTimer(specialDuration);
     }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Check to see if you collided with an enemy during your dodge while the ghost special is active
-        if (collision.gameObject.CompareTag("Enemy") && isDodging && ghostSpecialActive)
-        {
-            // Retrieve the health script on the enemy
-            Health eHealth = collision.gameObject.GetComponent<Health>();
-
-            // Add the reference to the collider to the markedEnemies list
-            markedEnemies.Add(eHealth);
-
-            // Mark the enemy. The severity depends on the amount of charges
-            eHealth.Marked(damageIncrease * souls.GetCharges());
-        }
-    }
-
     #endregion
 
-    //
+    // End of Default
 
-    #region Input
+    #region INPUT
+
     public void OnSwapStance(InputAction.CallbackContext context)
     {
         // Check if the input was triggered
@@ -243,9 +275,9 @@ public class PlayerController : MonoBehaviour
         Special();
     }
 
-    public void OnDodge()
+    public void OnDash()
     {
-        Dodge();
+        Dash();
     }
 
     public void OnInteract()
@@ -255,9 +287,9 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    //
+    // End of Input
 
-    #region Stances
+    #region STANCES
 
     private void DetermineStance(float inputValue)
     {
@@ -287,6 +319,9 @@ public class PlayerController : MonoBehaviour
         foreach (GameObject icon in stanceIcons) icon.SetActive(false);
         stanceIcons[stancePosition].SetActive(true);
 
+        // Set the color of the weapon
+        swordRenderer.material.color = stanceColors[stancePosition];
+
         // Check if there is a special going on. If not, then swap to the correct special stance icon
         if (!specialActive)
         {
@@ -297,74 +332,108 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    // 
+    // End of Stances
 
-    #region Movement
+    #region MOVEMENT
 
     private void Move()
     {
         // Calculate movement
         Vector3 movement = new Vector3(move.x, 0f, move.y);
+        
+        // Rotate the player
+        if (canRotate) Rotate(movement);
 
+        // If the player cannot move, make sure he stands still
+        if (canMove)
+        {
+            // Move the player
+            transform.Translate(movement * moveSpeed * Time.deltaTime, Space.World);
+
+            // Set the correct animation
+            animator.SetFloat("Speed", movement.magnitude);
+
+            // If the player is not movingdo this to stop him from moving after collisions
+            if (movement.magnitude == 0) rb.velocity = Vector3.zero;
+        }
+        else
+        {
+            rb.velocity = Vector3.zero;
+        }
+    }
+
+    private void Rotate(Vector3 movement)
+    {
         // First check if the player is moving to avoid snapping back to its default rotation upon being idle.
         if (movement.magnitude > 0)
         {
             // The rotation of the transform is equal to the direction the player is moving
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movement), rotationSpeed);
         }
-
-        // This apparently works really well so let's remember transform.Translate
-        transform.Translate(movement * moveSpeed * Time.deltaTime, Space.World);
-
-        // Check if the player is running or not, then set the correct animation
-        animator.SetFloat("Movement", movement.magnitude);
-
-        // If the player is not moving, but is dodging, make sure the run animation plays nonetheless
-        if (movement.magnitude == 0 && isDodging) animator.SetFloat("Movement", rb.velocity.magnitude);
-
-        // If the player is not moving or dodging, do this to stop him from moving after collisions
-        if (movement.magnitude == 0 && !isDodging) rb.velocity = Vector3.zero;
     }
 
     #endregion
 
-    //
+    // End of Movement
 
-    #region Attacking
+    #region ATTACKING
 
     private void Attack()
     {
-        if (canAttack && !isDodging)
+        // Check if the player can attack and is not in a dodge animation
+        if (canAttack && !isDashing)
         {
-            canAttack = false;
+            if (attackReset != null) StopCoroutine(attackReset);
+
+            // The player cannot attack or move, but can rotate
             canMove = false;
+            canRotate = true;
+            canAttack = false;
 
-            animator.SetTrigger("Attack");
+            AttackCombo();
 
-            StartCoroutine(ResetAttack());
-            StartCoroutine(ApplyDamage());
-        }   
+            // The player is starting his attack. He can still rotate
+            Invoke(nameof(AttackStart), attackChargeTime);
+
+            // Reset canAttack after the duration of attackSpeed
+            attackReset = StartCoroutine(AttackReset());
+        }
     }
 
-    private IEnumerator ResetAttack()
+    private void AttackStart()
     {
-        // Wait for the attackSpeed of the player, before the player can attack again
-        yield return new WaitForSeconds(attackSpeed - attackOffset);
+        // The player has started his attack and can no longer rotate
+        canRotate = false;
+        isAttacking = true;
+
+        // Retrieve all hits and deal damage
+        DealDamage();
+    }
+
+    private IEnumerator AttackReset()
+    {
+        // Wait for the attackSpeed
+        yield return new WaitForSeconds(attackSpeed - movementDelay);
+
+        // The player is done attacking and can attack again
         canAttack = true;
+        isAttacking = false;
 
-        /* Wait a little longer before making the player move again, 
-         * so that animations do not trigger double and the player can "chain attack" */
-        yield return new WaitForSeconds(attackOffset);
-        if (canAttack) canMove = true;
+        // Allow chain attacks
+        yield return new WaitForSeconds(movementDelay);
+
+        // The player can move again
+        canMove = true;
+        canRotate = true;
     }
 
-    private IEnumerator ApplyDamage()
+    private void DealDamage()
     {
-        // Wait a moment for the swing to start
-        yield return new WaitForSeconds(attackSpeed / damageDelay);
+        // If the player is dashing, do not damage enemies
+        if (isDashing) return;
 
         // Retrieve all detected colliders
-        Collider[] hits = Physics.OverlapSphere(attackPoint.position, attackRange);
+        Collider[] hits = Physics.OverlapBox(attackPoint.position, attackSize);
 
         foreach (Collider hit in hits)
         {
@@ -374,40 +443,58 @@ public class PlayerController : MonoBehaviour
                 // Retrieve the health script on the enemy
                 Health eHealth = hit.GetComponent<Health>();
 
-                // Make a variable for damage handling, to avoid ridiculous stacking from the Ghost stance
-                float damage = attackDamage;
+                // Damage the enemy
+                eHealth.Damage(attackDamage);
 
-                // Check for active stances, and handle additional logic accordingly
-                // Check if the vampire stance is active. If so, inflict bleed upon the enemy
-                if (currentStance == "Vampire") eHealth.Bleed(bleedDamage, bleedTicks, false);
-
-                // OLD ORC STANCE HERE
-                else if (currentStance == "Orc") eHealth.KnockBack(knockbackDamage, knockbackForce, knockbackDuration);
-
-                // Check if the orc stance is active. If so, knock the enemy backwards
-                //else if (currentStance == "Orc") eHealth.stagger;
-
-                // Check if the ghost stance is active. If so, deal more damage at the cost of health
-                else
-                {
-                    damage = damageIncrement;
-                    health.Damage(healthTax);
-                }
-
-                // Apply damage to the enemy
-                eHealth.Damage(damage);
-
-                // If the special is not active, grant the player souls
-                if (!specialActive) souls.GainSouls(soulsGain);
+                // Grant the player souls
+                souls.GainSouls(soulsGain);
             }
         }
     }
 
+    private void AttackCombo()
+    {
+        if (comboReset != null) StopCoroutine(comboReset);
+
+        comboCounter++;
+
+        // If attackCounter is even
+        if (comboCounter % 2 == 0)
+        {
+            // Set the right animation, attack size, and attackDuration variables
+            animator.SetTrigger("Attack - Pierce");
+            attackSize = new Vector3(1, 2, 4);
+            attackDamage = 20f;
+            attackChargeTime = 0.5f;
+            attackSpeed = 1.5f;
+            movementDelay = 0.5f;
+        }
+        // If attackCounter is odd
+        else
+        {
+            // Set the right animation, attack size, and attackDuration variables
+            animator.SetTrigger("Attack - Slash");
+            attackSize = new Vector3(2, 2, 3);
+            attackDamage = 10f;
+            attackChargeTime = 0.3f;
+            attackSpeed = 1f;
+            movementDelay = 0.3f;
+        }
+
+        comboReset = StartCoroutine(ComboReset());
+    }
+
+    private IEnumerator ComboReset()
+    {
+        yield return new WaitForSeconds(attackSpeed + movementDelay);
+
+        comboCounter = 0;
+    }
     #endregion
 
-    // 
+    // End of Attacking
 
-    #region Special
+    #region SPECIAL
 
     private void Special()
     {
@@ -417,8 +504,11 @@ public class PlayerController : MonoBehaviour
         // Retrieve soul charges for convenience
         int charges = souls.GetCharges();
 
+        // Then spend all available soul charges
+        souls.SpendSouls(charges * 20);
+
         // Check if the player is not attacking, dodging, and if he has more than 0 soul charges
-        if (canAttack && !isDodging && charges > 0)
+        if (canAttack && !isDashing && charges > 0)
         {
             specialActive = true;
 
@@ -472,7 +562,7 @@ public class PlayerController : MonoBehaviour
         playerCanvas.SetActive(true);
 
         // Some local variables to keep things cleaner
-        RectTransform size = vampireSpecialImage.rectTransform;
+        RectTransform size = vampireSpecialGFX.rectTransform;
         Vector2 nativeSize = size.sizeDelta;
         Vector2 maxSize = new Vector2(vampireSpecialRange, vampireSpecialRange);
         float increment = 0.3f;
@@ -495,7 +585,7 @@ public class PlayerController : MonoBehaviour
     }
 
     private void OrcSpecial(int charges)
-    {        
+    {
         // Set up variables
         float finalSpecialDuration = orcSpecialDuration * charges;
 
@@ -509,35 +599,28 @@ public class PlayerController : MonoBehaviour
 
     private void GhostSpecial(int charges)
     {
-        // Set up special timer
+        // Set up special timer and start the effect
         SpecialTimerSetup(ghostSpecialDuration * charges);
-        
-        // Do this to calculate dodge collisions
-        ghostSpecialActive = true;
-
         StartCoroutine(GhostSpecialEffect(charges));
     }
 
     private IEnumerator GhostSpecialEffect(int charges)
     {
         // Upon activation, make sure the dodge's cooldown is reset
-        DodgeReset();
+        DashReset();
 
-        // Reduce the dodge cooldown by 1 second for each charge
-        dodgeCooldown -= 1 * charges;
+        // Reduce the dodge cooldown by 1 second for each charge and allow the player to pass through enemies
+        dashCooldown -= 1 * charges;
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
 
         // This takes effect for as long as the duration * charges
         yield return new WaitForSeconds(ghostSpecialDuration * charges);
 
-        // Revert dodge cooldown
-        dodgeCooldown += 1 * charges;
+        // Revert effects
+        dashCooldown += 1 * charges;
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
 
-        // Unmark all enemies in the markedEnemies list
-        foreach (Health eHealth in markedEnemies) eHealth.RemoveMark();
-
-        // Set booleans
-        ghostSpecialActive = false;
-
+        // End the special
         SpecialEnd();
     }
 
@@ -590,66 +673,92 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    //
+    // End of Special
 
-    #region Dodging
+    #region DASHING
 
-    private void Dodge()
+    private void Dash()
     {
-        // If the player can move and the dodge is off cooldown, dodge
-        if (canMove && canDodge)
+        // If the player is not attacking and the dash is off cooldown, dash
+        if (!isAttacking && canDash)
         {
-            canDodge = false;
-            isDodging = true;
+            // If the player is dashing out of an attack, the player overrides movement constraints and the animation
+            if (canAttack && !isAttacking && !canMove && !canRotate)
+            {
+                animator.SetTrigger("Dash");
 
-            // Add the dodge force
-            rb.AddForce(transform.forward * dodgeForce, ForceMode.Impulse);
+                canMove = true;
+                canRotate = true;
 
-            // Stop the dodge after the dodge duration
-            Invoke(nameof(DodgeEnd), dodgeDuration);
+                // Calculate movement
+                Vector3 movement = new Vector3(move.x, 0f, move.y);
+                transform.rotation = Quaternion.LookRotation(movement);
+            }
 
-            // Make the player invulnerable for the dodge duration, unless the player is already invincible
-            if (invincibleCoroutine == null) StartCoroutine(Invincible(dodgeDuration));
+            // Booleans
+            canDash = false;
+            isDashing = true;
+
+            // Rigidbody Interpolation for better fluency while dashing, then add dashForce;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.AddForce(transform.forward * dashForce, ForceMode.Impulse);
+
+            // Stop the dash after the dash duration to prevent leftover motion
+            Invoke(nameof(DashEnd), dashDuration);
+
+            // Make the player invulnerable for the dash duration, unless the player is already invincible
+            if (invincibleCoroutine == null) StartCoroutine(Invincible(dashDuration));
 
             // Set up UI elements
-            cooldownTextDodge.gameObject.SetActive(true);
-            dodgeCooldownTimer = dodgeCooldown;
+            cooldownTextDash.gameObject.SetActive(true);
+            dashCooldownTimer = dashCooldown;
         }
     }
 
-    private void DodgeEnd()
+    private void DashCooldown(float cooldown)
     {
-        rb.velocity = Vector3.zero;
-        isDodging = false;
-    }
-
-    private void DodgeCooldown(float cooldown)
-    {
-        dodgeCooldownTimer -= Time.deltaTime;
+        // Count down
+        dashCooldownTimer -= Time.deltaTime;
 
         // Is the cooldown zero?
-        if (dodgeCooldownTimer <= 0) DodgeReset();
+        if (dashCooldownTimer <= 0)
+        {
+            // The player can dash again
+            DashReset();
+        }
         else
         {
             // Set the cooldownText accurate
-            cooldownTextDodge.text = Mathf.RoundToInt(dodgeCooldownTimer).ToString();
-            cooldownImageDodge.fillAmount = dodgeCooldownTimer / cooldown;
+            cooldownTextDash.text = Mathf.RoundToInt(dashCooldownTimer).ToString();
+            cooldownImageDash.fillAmount = dashCooldownTimer / cooldown;
         }
     }
-
-    private void DodgeReset()
+    private void DashEnd()
     {
-        // Reset variables
-        cooldownTextDodge.gameObject.SetActive(false);
-        cooldownImageDodge.fillAmount = 0;
+        // Reset rigidBody interpolation and reset player velocity
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.velocity = Vector3.zero;
 
-        // Reset the dodge
-        canDodge = true;
+        // Reset booleans
+        isDashing = false;
+
+        // If the dash has ended while the player is attacking, DealDamage()
+        if (isAttacking) DealDamage();
+    }
+
+    private void DashReset()
+    {
+        // Reset UI variables
+        cooldownTextDash.gameObject.SetActive(false);
+        cooldownImageDash.fillAmount = 0;
+
+        // Reset the ability to dash
+        canDash = true;
     }
 
     #endregion
 
-    //
+    // End of Dashing
 
     #region Other
 
@@ -678,14 +787,21 @@ public class PlayerController : MonoBehaviour
 
     //
 
-    //private void OnDrawGizmosSelected()
-    //{
-    //    // For the attack
-    //    Gizmos.color = Color.green;
-    //    Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    private void OnDrawGizmosSelected()
+    {
+        // For the attack
+        Gizmos.color = Color.red;
 
-    //    // For the vampire special
-    //    Gizmos.color = Color.red;
-    //    Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
-    //}
+        // Draw the cube using the attackPoint's position and rotation
+        Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, attackSize);
+
+        //For the vampire special
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
+    }
+
+    #endregion
+
+    // END OF EXECUTION
 }

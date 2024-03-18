@@ -348,7 +348,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: e49beb7fe1dac9246b162ef4fda6c981, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: b40cb4da94afb5c49af130e8f0469436, type: 2}
   m_BuildHeightMesh: 0
 --- !u!65 &145051038
 BoxCollider:
@@ -431,7 +431,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.24, z: 0}
-  m_LocalScale: {x: 180, y: 1, z: 180}
+  m_LocalScale: {x: 190, y: 1, z: 190}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1112407483}
@@ -893,6 +893,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4612808770111294306, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4703406213274408900, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: bleedDamage
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4703406213274408900, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: swordRenderer
+      value: 
+      objectReference: {fileID: 346966769}
     - target: {fileID: 4703406213274408900, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: cooldownTextDodge
       value: 
@@ -901,6 +913,10 @@ PrefabInstance:
       propertyPath: cooldownImageDodge
       value: 
       objectReference: {fileID: 2125887203}
+    - target: {fileID: 4703406213274408900, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireSpecialNerf
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4703406213274408900, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationText
       value: 
@@ -1100,6 +1116,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 329658594}
   m_CullTransparentMesh: 1
+--- !u!137 &346966769 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 891794181473955127, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+  m_PrefabInstance: {fileID: 232031416}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &362194333
 GameObject:
   m_ObjectHideFlags: 0

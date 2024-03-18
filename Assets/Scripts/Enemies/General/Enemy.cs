@@ -51,35 +51,35 @@ public class Enemy : MonoBehaviour
 
     #region Collision
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        float damage = playerController.knockbackDamage;
-        bool knockedBack = enemyHealth.knockedBack;
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    float damage = playerController.knockbackDamage;
+    //    bool knockedBack = enemyHealth.knockedBack;
 
-        // If not knocked back, do not execute this code
-        if (!knockedBack) return;
+    //    // If not knocked back, do not execute this code
+    //    if (!knockedBack) return;
 
-        // Check if the collider is in the collidesWith layer mask
-        if ((collidesWith.value & (1 << collision.gameObject.layer)) != 0)
-        {
-            if (enemyHealth != null) enemyHealth.Damage(damage);
+    //    // Check if the collider is in the collidesWith layer mask
+    //    if ((collidesWith.value & (1 << collision.gameObject.layer)) != 0)
+    //    {
+    //        if (enemyHealth != null) enemyHealth.Damage(damage);
 
-            GameObject collider = collision.gameObject;
+    //        GameObject collider = collision.gameObject;
 
-            // If the enemy collided with another enemy, damage it too
-            if (collider.CompareTag("Enemy"))
-            {
-                Health eHealth = collider.GetComponent<Health>();
-                if (eHealth != null) // Make sure the enemy has a Health component
-                {
-                    eHealth.Damage(damage);
-                }
-            }
+    //        // If the enemy collided with another enemy, damage it too
+    //        if (collider.CompareTag("Enemy"))
+    //        {
+    //            Health eHealth = collider.GetComponent<Health>();
+    //            if (eHealth != null) // Make sure the enemy has a Health component
+    //            {
+    //                eHealth.Damage(damage);
+    //            }
+    //        }
 
-            // Reset the knockedBack flag to prevent repeated damage
-            enemyHealth.knockedBack = false;
-        }
-    }
+    //        // Reset the knockedBack flag to prevent repeated damage
+    //        enemyHealth.knockedBack = false;
+    //    }
+    //}
 
     #endregion
 
