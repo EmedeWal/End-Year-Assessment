@@ -60,7 +60,7 @@ public class Health : MonoBehaviour
     [SerializeField] private float specialHeal;
 
     private Coroutine currentCoroutine;
-    private float bleedIntervals = 0.8f;
+    private float bleedIntervals;
     private bool isCursed;
     private bool isBleeding;
 
@@ -189,7 +189,7 @@ public class Health : MonoBehaviour
 
     #region Vampire Stance
 
-    public void Bleed(float damage, float duration, bool isSpecial)
+    public void Bleed(float damage, float ticks, float intervals, bool isSpecial)
     {
         // If it is a special bleed, set cursed to true
         if (isSpecial)
@@ -197,7 +197,7 @@ public class Health : MonoBehaviour
             isCursed = true;
             healthUI.SetStatusIconActive(0, false);
             healthUI.SetStatusIconActive(1, true);
-            SetBleed(damage, duration);
+            SetBleed(damage, ticks, intervals, true);
         }
 
         // Special bleeds cannot be overridden
@@ -205,30 +205,36 @@ public class Health : MonoBehaviour
 
         // Set a regular bleed
         healthUI.SetStatusIconActive(0, true);
-        SetBleed(damage, duration);
+        SetBleed(damage, ticks, intervals, false);
     }
 
-    private void SetBleed(float damage, float duration)
+    private void SetBleed(float damage, float ticks, float intervals, bool isSpecial)
     {
+        bleedIntervals = intervals;
+
         // If the enemy is not yet bleeding, make him bleed
         if (isBleeding) StopCoroutine(currentCoroutine);
-        currentCoroutine = StartCoroutine(ApplyBleed(damage, duration));
+        currentCoroutine = StartCoroutine(ApplyBleed(damage, ticks, isSpecial));
     }
 
-    private IEnumerator ApplyBleed(float damage, float duration)
+    private IEnumerator ApplyBleed(float damage, float ticks, bool isSpecial)
     {
         isBleeding = true;
 
         /* The enemy takes one second of damage for the bleed duration
          * The damage is multiplied by severity */
-        for (int i = 0; i < duration; i++) 
+        for (int i = 0; i < ticks; i++) 
         {
             // Wait for the bleed interval to start damaging the enemy
             yield return new WaitForSeconds(bleedIntervals);
 
-            // Damage the enemy and heal the player
+            // Damage the enemy
             Damage(damage);
-            playerHealth.Heal(damage * damageModifier);
+
+            // Determine the amount of healing based on special or not
+            float heal = damage;
+            if (!isSpecial) heal /= 4;
+            playerHealth.Heal(heal);
         }
 
         isBleeding = false;
@@ -279,26 +285,6 @@ public class Health : MonoBehaviour
 
     // 
 
-    #region Ghost Stance
-
-    public void Marked(float damageIncrease)
-    {
-        // Make the enemy take more damage and set the status icon active
-        damageModifier = 1f + damageIncrease;
-        healthUI.SetStatusIconActive(3, true);
-    }
-
-    public void RemoveMark()
-    {
-        // Reset the damage modifier and set the status icon inactive
-        damageModifier = 1f;
-        healthUI.SetStatusIconActive(3, false);
-    }
-
-    #endregion
-
-    //
-
     #endregion
 
     //
@@ -307,9 +293,6 @@ public class Health : MonoBehaviour
 
     private void Die()
     {
-        // If the enemy is marked (more damage taken) while it dies, remove it from the list
-        if (isEnemy && damageModifier > 1f) playerController.markedEnemies.Remove(this);
-
         // Invoke the death event
         death?.Invoke();
 
