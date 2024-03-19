@@ -13,9 +13,8 @@ public class Enemy : MonoBehaviour
 
     // Player References
     [HideInInspector] public PlayerController playerController;
+    [HideInInspector] public PlayerResources playerResources;
     [HideInInspector] public Transform playerTransform;
-    [HideInInspector] public Health playerHealth;
-    [HideInInspector] public Souls playerSouls;
 
     // Set up variables
     [Header("Collision")]
@@ -44,9 +43,8 @@ public class Enemy : MonoBehaviour
 
         // Retrieve player references from the parent gameObject
         playerController = spawner.playerController;
+        playerResources = spawner.playerResources;
         playerTransform = spawner.playerTransform;
-        playerHealth = spawner.playerHealth;
-        playerSouls = spawner.playerSouls;
     }
 
     //

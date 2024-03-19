@@ -187,7 +187,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 0}
+  m_NavMeshData: {fileID: 23800000, guid: cfa795becfaa893488bc21f86853f9a9, type: 2}
   m_BuildHeightMesh: 0
 --- !u!65 &128246691
 BoxCollider:
@@ -1463,6 +1463,10 @@ PrefabInstance:
     - target: {fileID: 4682828495929238245, guid: b96fd0b89f7148743af71404495328d6, type: 3}
       propertyPath: m_Name
       value: Skeleton
+      objectReference: {fileID: 0}
+    - target: {fileID: 5028792203554100145, guid: b96fd0b89f7148743af71404495328d6, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9121345064740217676, guid: b96fd0b89f7148743af71404495328d6, type: 3}
       propertyPath: maxHealth
@@ -3649,10 +3653,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28eb74e9f2183f3489ed7863215e3ddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 2071074725}
   playerController: {fileID: 2071074724}
-  playerHealth: {fileID: 2071074726}
-  playerSouls: {fileID: 2071074722}
+  playerResources: {fileID: 2071074727}
+  playerTransform: {fileID: 2071074725}
   active: 0
   enemies:
   - enemyPrefab: {fileID: 4682828495929238245, guid: b96fd0b89f7148743af71404495328d6, type: 3}
@@ -3797,17 +3800,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2052824298}
   m_CullTransparentMesh: 1
---- !u!114 &2071074722 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6292108667659051397, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-  m_PrefabInstance: {fileID: 5068897804548220252}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60cf8b7969dd284409c48a6081852baf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2071074724 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
@@ -3824,15 +3816,15 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
   m_PrefabInstance: {fileID: 5068897804548220252}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2071074726 stripped
+--- !u!114 &2071074727 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4275669722530230021, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+  m_CorrespondingSourceObject: {fileID: 6871201602568147199, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
   m_PrefabInstance: {fileID: 5068897804548220252}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a638dcb5bbee8244db4a7528a90a132e, type: 3}
+  m_Script: {fileID: 11500000, guid: 119bfc96ce94ea14998b07f1c233e8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &2108571985
@@ -4063,146 +4055,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.size
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_ActionId
-      value: 75de8292-2823-4fe4-89d7-7aac021f5864
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_ActionName
-      value: Player/Heavy Attack[/Mouse/rightButton]
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[1].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[2].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[4].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[1].m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 2071074724}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 2071074724}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 2071074724}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[1].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnLightAttack
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnSwapStance
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnHeavyAttack
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: PlayerController, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 4275669722530230021, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: healthUI
-      value: 
-      objectReference: {fileID: 557222236}
-    - target: {fileID: 6292108667659051397, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+    - target: {fileID: 6871201602568147199, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: fill
       value: 
       objectReference: {fileID: 1560697407}
-    - target: {fileID: 6292108667659051397, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+    - target: {fileID: 6871201602568147199, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: slider
       value: 
       objectReference: {fileID: 763571286}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: bleedTicks
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: bleedDamage
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: bleedIntervals
-      value: 0.25
-      objectReference: {fileID: 0}
+    - target: {fileID: 6871201602568147199, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: healthUI
+      value: 
+      objectReference: {fileID: 557222236}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: cooldownTextDash
       value: 
       objectReference: {fileID: 384490351}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: damageMultiplier
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: cooldownImageDash
       value: 
       objectReference: {fileID: 180472155}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: orcSpecialDuration
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: vampireSpecialNerf
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: orcDamageMultiplier
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationText
       value: 
       objectReference: {fileID: 453726348}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: vampireSpecialTicks
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationImage
       value: 
       objectReference: {fileID: 695799031}
-    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: ghostDamageMultiplier
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: stanceIcons.Array.data[0]
       value: 

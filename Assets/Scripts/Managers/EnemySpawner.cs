@@ -8,10 +8,9 @@ public class EnemySpawner : MonoBehaviour
     #region Player References
 
     [Header("Player References")]
-    public Transform playerTransform;
     public PlayerController playerController;
-    public Health playerHealth;
-    public Souls playerSouls;
+    public PlayerResources playerResources;
+    public Transform playerTransform;
 
     #endregion
 

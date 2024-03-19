@@ -26,9 +26,8 @@ public class Health : MonoBehaviour
 
     // Player
     private PlayerController playerController;
+    private PlayerResources playerResources;
     private Transform playerTransform;
-    private Health playerHealth;
-    private Souls playerSouls;
 
     #endregion
 
@@ -50,7 +49,7 @@ public class Health : MonoBehaviour
 
     #endregion
 
-    //
+    // End of Variables
 
     #region Stance Variables and References
 
@@ -68,25 +67,10 @@ public class Health : MonoBehaviour
 
     //
 
-    #region Orc Stance
-
-    [HideInInspector] public bool knockedBack;
 
     #endregion
 
-    //
-
-    #region Ghost Stance
-
-    private float damageModifier = 1f;
-
-    #endregion
-
-    //
-
-    #endregion
-
-    //
+    // End of Stance Variables and References
 
     #region General
 
@@ -118,9 +102,8 @@ public class Health : MonoBehaviour
 
             // Assign Player References
             playerController = enemy.playerController;
+            playerResources = enemy.playerResources;
             playerTransform = enemy.playerTransform;
-            playerHealth = enemy.playerHealth;
-            playerSouls = enemy.playerSouls;
         }
 
         // Update UI
@@ -167,10 +150,10 @@ public class Health : MonoBehaviour
         // Check if the player is invulnerable
         if (invincible) return;
 
-        Debug.Log(gameObject.name + " took " + amount * damageModifier + " damage.");
+        Debug.Log(gameObject.name + " took " + amount + " damage.");
 
         // Modify health according to amount and the damage modifier and handle out of bounds input
-        currentHealth -= amount * damageModifier;
+        currentHealth -= amount;
         if (currentHealth <= 0) Die();
 
         // Update UI
@@ -234,7 +217,7 @@ public class Health : MonoBehaviour
             // Determine the amount of healing based on special or not
             float heal = damage;
             if (!isSpecial) heal /= 4;
-            playerHealth.Heal(heal);
+            playerResources.Heal(heal);
         }
 
         isBleeding = false;
@@ -250,35 +233,6 @@ public class Health : MonoBehaviour
             // If it was a regular bleed, set the normal bleed icon to false
             healthUI.SetStatusIconActive(0, false);
         }
-    }
-
-    #endregion
-
-    //
-
-    #region Orc Stance
-
-    public void KnockBack(float damage, float force, float duration)
-    {
-        // The enemy is knocked back. Set the icon
-        knockedBack = true;
-        healthUI.SetStatusIconActive(2, true);
-
-        // Calculate the direction from the player to the enemy.
-        Vector3 knockbackDirection = (transform.position - playerTransform.position).normalized;
-
-        // Apply force to the enemy's Rigidbody in the calculated direction.
-        rb.AddForce(knockbackDirection * force, ForceMode.Impulse);
-
-        // After a little while, stop the knockBack and reset the variable
-        Invoke(nameof(ResetKnockBack), duration);
-    }
-
-    private void ResetKnockBack()
-    {
-        rb.velocity = Vector3.zero;
-        knockedBack = false;
-        healthUI.SetStatusIconActive(2, false);
     }
 
     #endregion

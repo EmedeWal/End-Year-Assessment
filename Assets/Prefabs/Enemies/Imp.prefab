@@ -40,7 +40,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2793706756123314408}
-  - component: {fileID: 9112806385477087847}
   - component: {fileID: 3955311645222672704}
   - component: {fileID: 8272920098328494603}
   - component: {fileID: 8271682602553298944}
@@ -70,33 +69,6 @@ Transform:
   - {fileID: 5316805630645347721}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &9112806385477087847
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5080532581376076192}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 1
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!136 &3955311645222672704
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -135,9 +107,8 @@ MonoBehaviour:
   spawner: {fileID: 0}
   enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
+  playerResources: {fileID: 0}
   playerTransform: {fileID: 0}
-  playerHealth: {fileID: 0}
-  playerSouls: {fileID: 0}
   collidesWith:
     serializedVersion: 2
     m_Bits: 640
@@ -198,7 +169,6 @@ MonoBehaviour:
   currentHealth: 0
   invincible: 0
   specialHeal: 2
-  knockedBack: 0
 --- !u!114 &8914662334924207182
 MonoBehaviour:
   m_ObjectHideFlags: 0

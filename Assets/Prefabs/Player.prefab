@@ -218,11 +218,10 @@ GameObject:
   m_Component:
   - component: {fileID: 396148104415986476}
   - component: {fileID: 4750092504326484898}
-  - component: {fileID: 5518537757724529607}
+  - component: {fileID: 3196250912951572095}
   - component: {fileID: 3785289948086015287}
   - component: {fileID: 7329571035110700831}
-  - component: {fileID: 4275669722530230021}
-  - component: {fileID: 6292108667659051397}
+  - component: {fileID: 6871201602568147199}
   - component: {fileID: 968962342823772721}
   m_Layer: 8
   m_Name: Player
@@ -276,8 +275,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 116
   m_CollisionDetection: 0
---- !u!136 &5518537757724529607
-CapsuleCollider:
+--- !u!65 &3196250912951572095
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -294,11 +293,9 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.4
-  m_Height: 1.8
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.9, z: 0}
+  serializedVersion: 3
+  m_Size: {x: 1, y: 2, z: 1}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3785289948086015287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,8 +341,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7329571035110700831}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
-        m_MethodName: OnAttack
-        m_Mode: 1
+        m_MethodName: OnLightAttack
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -361,7 +358,7 @@ MonoBehaviour:
       - m_Target: {fileID: 7329571035110700831}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnSpecial
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -377,7 +374,7 @@ MonoBehaviour:
       - m_Target: {fileID: 7329571035110700831}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnDash
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -393,7 +390,7 @@ MonoBehaviour:
       - m_Target: {fileID: 7329571035110700831}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnInteract
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -420,6 +417,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 1aac6eed-0147-40e5-b2fd-2775e5c55c65
     m_ActionName: Player/Swap Stance[/Keyboard/q,/Keyboard/e]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7329571035110700831}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnHeavyAttack
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 75de8292-2823-4fe4-89d7-7aac021f5864
+    m_ActionName: Player/Heavy Attack[/Mouse/rightButton]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -437,10 +450,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5677e6a72264378438f3bc164c60ebd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCanvas: {fileID: 8381269980898541413}
-  attackPoint: {fileID: 5776884065643932486}
-  animator: {fileID: 8820280713895093630}
-  soulsGain: 10
   die:
     m_PersistentCalls:
       m_Calls:
@@ -456,12 +465,16 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  playerCanvas: {fileID: 8381269980898541413}
+  attackPoint: {fileID: 5776884065643932486}
+  animator: {fileID: 8820280713895093630}
   stances:
   - Vampire
   - Orc
   - Ghost
   swordRenderer: {fileID: 8853623589791076098}
   stancePosition: 1
+  currentStance: 
   stanceIcons:
   - {fileID: 0}
   - {fileID: 0}
@@ -470,28 +483,20 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 0}
   - {r: 0, g: 1, b: 0.09333682, a: 0}
   - {r: 0, g: 0.7877269, b: 1, a: 0}
-  bleedDamage: 2
-  bleedTicks: 5
+  bleedDamage: 1
+  bleedTicks: 20
+  bleedIntervals: 0.25
   vampireSpecialGFX: {fileID: 463203988367990435}
-  vampireSpecialNerf: 1
-  vampireSpecialDuration: 8
+  vampireSpecialTicks: 10
   vampireSpecialRange: 10
-  knockbackDamage: 0
-  knockbackForce: 0
-  knockbackDuration: 0
-  orcSpecialDuration: 0
-  damageIncrement: 0
-  healthTax: 0
-  damageIncrease: 0
+  orcDamageMultiplier: 2
+  orcSpecialDuration: 2
+  ghostDamageMultiplier: 2
   ghostSpecialDuration: 2
-  markedEnemies: []
   moveSpeed: 10
   rotationSpeed: 0.2
-  attackSize: {x: 2, y: 2, z: 3}
-  attackDamage: 10
-  attackSpeed: 1.5
-  attackChargeTime: 0.5
-  movementDelay: 0.5
+  lightAttackSoulGain: 5
+  heavyAttackSoulGain: 10
   stanceSpecialIcons:
   - {fileID: 0}
   - {fileID: 0}
@@ -504,7 +509,7 @@ MonoBehaviour:
   dashForce: 36
   dashCooldown: 6
   dashDuration: 0.4
---- !u!114 &4275669722530230021
+--- !u!114 &6871201602568147199
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -513,17 +518,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8548571301745153244}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a638dcb5bbee8244db4a7528a90a132e, type: 3}
+  m_Script: {fileID: 11500000, guid: 119bfc96ce94ea14998b07f1c233e8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stagger:
-    m_PersistentCalls:
-      m_Calls: []
-  death:
+  die:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7329571035110700831}
-        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+      - m_Target: {fileID: 968962342823772721}
+        m_TargetAssemblyTypeName: Death, Assembly-CSharp
         m_MethodName: Die
         m_Mode: 1
         m_Arguments:
@@ -535,28 +537,6 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   healthUI: {fileID: 0}
-  canvasPrefab: {fileID: 0}
-  objectCollider: {fileID: 0}
-  animator: {fileID: 0}
-  canvasOffset: {x: 0, y: 0, z: 0}
-  maxHealth: 100
-  staggerThreshold: 100
-  currentHealth: 0
-  invincible: 0
-  specialHeal: 0
-  knockedBack: 0
---- !u!114 &6292108667659051397
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8548571301745153244}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60cf8b7969dd284409c48a6081852baf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
   gradient:
     serializedVersion: 2
     key0: {r: 0.546545, g: 0, b: 1, a: 1}
@@ -589,8 +569,15 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   slider: {fileID: 0}
   fill: {fileID: 0}
+  maxHealth: 100
+  startingHealth: 100
+  currentHealth: 0
+  invincible: 0
+  healingCooldown: 5
+  healingThreshold: 50
+  healingAmount: 1
   maxSouls: 100
-  startingSouls: 100
+  startingSouls: 0
   currentSouls: 0
 --- !u!114 &968962342823772721
 MonoBehaviour:
@@ -604,8 +591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d4426ff1c1eed44e9e9e6e285ca7138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathDelay: 0
-  sceneToLoad: 
+  deathDelay: 3
+  sceneToLoad: Menu
 --- !u!1001 &8878330935788986194
 PrefabInstance:
   m_ObjectHideFlags: 0

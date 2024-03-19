@@ -24,8 +24,7 @@ public class ImpProjectile : MonoBehaviour
 
         if (collisionObject.CompareTag("Player"))
         {
-            Health pHealth = collisionObject.GetComponent<Health>();
-
+            PlayerResources pHealth = collisionObject.GetComponent<PlayerResources>();
             if (pHealth != null ) pHealth.Damage(damage);
         }
         

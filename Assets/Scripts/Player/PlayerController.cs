@@ -5,11 +5,19 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.Events;
-using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public class PlayerController : MonoBehaviour
 {
     #region !SETUP!
+
+    #region OTHER
+
+    public UnityEvent die;
+    private Coroutine invincibleCoroutine;
+    private int soulGain;
+    #endregion
+
+    // End of Other
 
     #region REFERENCES
 
@@ -22,35 +30,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
 
+    private PlayerResources resources;
     private Rigidbody rb;
-    private Health health;
-    private Souls souls;
     #endregion
 
     #endregion
 
     // End of References
-
-    #region VARIABLES
-
-    [Header("VARIABLES")]
-
-    #region Souls
-
-    [Header("Souls")]
-    [SerializeField] private int soulsGain;
-    #endregion
-
-    #region Other
-
-    [Header("Other")]
-    public UnityEvent die;
-    private Coroutine invincibleCoroutine;
-    #endregion
-
-    #endregion
-
-    // End of Variables
 
     #region STANCES
 
@@ -62,8 +48,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private string[] stances;
     [SerializeField] private Renderer swordRenderer;
 
-    public int stancePosition = 0;
-    public string currentStance;
+    private int stancePosition = 0;
+    private string currentStance;
     #endregion
 
     #region UI
@@ -118,6 +104,10 @@ public class PlayerController : MonoBehaviour
 
     #region ATTACKING
 
+    [Header("ATTACKING")]
+    [SerializeField] private int lightAttackSoulGain;
+    [SerializeField] private int heavyAttackSoulGain;
+
     private List<GameObject> damagedEnemies = new List<GameObject>();
     private Coroutine attackReset;
     private Coroutine comboReset;
@@ -158,7 +148,7 @@ public class PlayerController : MonoBehaviour
 
     #region DASHING
 
-    [Header("Dashing")]
+    [Header("DASHING")]
 
     #region User Interface
 
@@ -195,9 +185,8 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         // Retrieve components
+        resources = GetComponent<PlayerResources>();
         rb = GetComponent<Rigidbody>();
-        health = GetComponent<Health>();
-        souls = GetComponent<Souls>();
 
         // Set objects inactive
         playerCanvas.SetActive(false);
@@ -208,9 +197,6 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // Make the editor a little more intuitive
-        stancePosition--;
-
         // Set the cooldown text inactive and make sure the images value is correct
         cooldownTextDash.gameObject.SetActive(false);
         cooldownImageDash.fillAmount = 0;
@@ -443,8 +429,12 @@ public class PlayerController : MonoBehaviour
 
     private void DealDamage()
     {
+        // Create this variable to handle double hits in Orc stance
+        bool attackLanded = false;
+
         // Determine whether the player was lunging or not
         bool isLunge = false;
+
         if (isDashing) isLunge = true;
 
         // Retrieve all detected colliders
@@ -457,8 +447,12 @@ public class PlayerController : MonoBehaviour
             // Check if the hit is an enemy and it has not been damaged yet
             if (hitObject.CompareTag("Enemy") && !damagedEnemies.Contains(hitObject))
             {
-                // Increment the combo counter
-                AttackCombo();
+                // Increment the combo counter, limited to one per attack
+                if (!attackLanded)
+                {
+                    attackLanded = true;
+                    AttackCombo();
+                }
 
                 // Retrieve the health script on the enemy
                 Health eHealth = hit.GetComponent<Health>();
@@ -483,7 +477,7 @@ public class PlayerController : MonoBehaviour
                 damagedEnemies.Add(hitObject);
 
                 // Grant the player souls
-                souls.GainSouls(soulsGain);
+                resources.GainSouls(soulGain);
             }
         }
     }
@@ -510,6 +504,7 @@ public class PlayerController : MonoBehaviour
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Slash");
             attackSize = new Vector3(2, 2, 3);
+            soulGain = lightAttackSoulGain;
             attackDamage = 10f;
             attackChargeTime = 0.3f;
             attackSpeed = 1f;
@@ -521,6 +516,7 @@ public class PlayerController : MonoBehaviour
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Pierce");
             attackSize = new Vector3(1, 2, 4);
+            soulGain = heavyAttackSoulGain;
             attackDamage = 15f;
             attackChargeTime = 0.5f;
             attackSpeed = 1.5f;
@@ -536,10 +532,10 @@ public class PlayerController : MonoBehaviour
     private void Special()
     {
         // Retrieve soul charges for convenience
-        int charges = souls.GetCharges();
+        int charges = resources.GetCharges();
 
         // Then spend all available soul charges
-        souls.SpendSouls(charges * 20);
+        resources.SpendSouls(charges * 20);
 
         // Check if the player is not attacking, dodging, and if he has more than 0 soul charges
         if (canAttack && !isDashing && charges > 0)
@@ -791,9 +787,9 @@ public class PlayerController : MonoBehaviour
     private IEnumerator Invincible(float duration)
     {
         // Make the player invincible for the duration
-        health.invincible = true;
+        resources.invincible = true;
         yield return new WaitForSeconds(duration);
-        health.invincible = false;
+        resources.invincible = false;
 
         // If a coroutine is assigned, unassign it
         if (invincibleCoroutine != null) invincibleCoroutine = null;
