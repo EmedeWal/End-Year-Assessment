@@ -119,8 +119,6 @@ public class PlayerResources : MonoBehaviour
     #region Health
     public void Heal(float amount)
     {
-        Debug.Log(gameObject.name + " healed " + amount + " health.");
-
         // Modify health and handle out of bounds input
         currentHealth += amount;
         if (currentHealth > maxHealth) currentHealth = maxHealth;
@@ -136,8 +134,6 @@ public class PlayerResources : MonoBehaviour
 
         // If active, interrupt passive healing
         if (healingCoroutine != null) StopCoroutine(healingCoroutine);
-
-        Debug.Log(gameObject.name + " took " + amount + " damage.");
 
         // Modify health according to amount and the damage modifier and handle out of bounds input
         currentHealth -= amount;

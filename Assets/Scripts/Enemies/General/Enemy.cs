@@ -67,11 +67,18 @@ public class Enemy : MonoBehaviour
             GameObject explosion = Instantiate(explosionPrefab, spawner.transform);
             explosion.transform.position = transform.position + new Vector3(0, 1, 0);
             
+            // Damage all enemies caught in the blast
             foreach (Collider hit  in hits)
             {
-                Health health = hit.GetComponent<Health>();
+                Health eHealth = hit.GetComponent<Health>();
+                if (eHealth != null) eHealth.Damage(explosionDamage);
+            }
 
-                if (health != null) health.Damage(explosionDamage);
+            // Damage the player caught in the blast
+            foreach (Collider hit in hits)
+            {
+                PlayerResources pHealth = hit.GetComponent<PlayerResources>();
+                if (pHealth != null) pHealth.Damage(explosionDamage);
             }
         }
 

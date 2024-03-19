@@ -10,15 +10,6 @@ public class PlayerController : MonoBehaviour
 {
     #region !SETUP!
 
-    #region OTHER
-
-    public UnityEvent die;
-    private Coroutine invincibleCoroutine;
-    private int soulGain;
-    #endregion
-
-    // End of Other
-
     #region REFERENCES
 
     [Header("REFERENCES")]
@@ -34,9 +25,29 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     #endregion
 
+    #region Audio Sources
+    [SerializeField] private AudioSource[] audioSources;
+    #endregion
+
     #endregion
 
     // End of References
+
+    #region VARIABLES
+    private Coroutine invincibleCoroutine;
+    private int soulGain;
+
+    private float audioOffset = 0;
+    #endregion 
+
+    // End of Variables
+
+    #region EVENTS
+
+    public UnityEvent die;
+    #endregion
+
+    // End of Events
 
     #region STANCES
 
@@ -62,6 +73,7 @@ public class PlayerController : MonoBehaviour
     #region Vampire Stance
 
     [Header("Vampire Stance")]
+    [SerializeField] private AudioClip vampireClip;
     [SerializeField] private float bleedDamage;
     [SerializeField] private float bleedTicks;
     [SerializeField] private float bleedIntervals;
@@ -74,6 +86,7 @@ public class PlayerController : MonoBehaviour
     #region Orc Stance
 
     [Header("Orc Stance")]
+    [SerializeField] private AudioClip orcClip;
     [SerializeField] private float orcDamageMultiplier;
     [SerializeField] private float orcSpecialDuration;
     #endregion
@@ -81,6 +94,8 @@ public class PlayerController : MonoBehaviour
     #region Ghost Stance
 
     [Header("Ghost Stance")]
+    [SerializeField] private AudioClip ghostClip;
+    [SerializeField] private float ghostAudioOffset;
     [SerializeField] private float ghostDamageMultiplier;
     [SerializeField] private float ghostSpecialDuration;
     #endregion
@@ -105,6 +120,8 @@ public class PlayerController : MonoBehaviour
     #region ATTACKING
 
     [Header("ATTACKING")]
+    [SerializeField] private AudioClip lightAttackClip;
+    [SerializeField] private AudioClip heavyAttackClip;
     [SerializeField] private int lightAttackSoulGain;
     [SerializeField] private int heavyAttackSoulGain;
 
@@ -160,6 +177,7 @@ public class PlayerController : MonoBehaviour
     #region Variables
 
     [Header("Variables")]
+    [SerializeField] private AudioClip dashClip;
     [SerializeField] private float dashForce;
     [SerializeField] private float dashCooldown;
     [SerializeField] private float dashDuration;
@@ -388,6 +406,9 @@ public class PlayerController : MonoBehaviour
         if (attackReset != null) StopCoroutine(attackReset);
         damagedEnemies.Clear();
 
+        // Play the correct clip
+        audioSources[0].Play();
+
         // The player cannot attack or move, but can rotate
         canMove = false;
         canRotate = true;
@@ -503,6 +524,7 @@ public class PlayerController : MonoBehaviour
         {
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Slash");
+            audioSources[0].clip = lightAttackClip;
             attackSize = new Vector3(2, 2, 3);
             soulGain = lightAttackSoulGain;
             attackDamage = 10f;
@@ -515,6 +537,7 @@ public class PlayerController : MonoBehaviour
         {
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Pierce");
+            audioSources[0].clip = heavyAttackClip;
             attackSize = new Vector3(1, 2, 4);
             soulGain = heavyAttackSoulGain;
             attackDamage = 15f;
@@ -531,21 +554,43 @@ public class PlayerController : MonoBehaviour
 
     private void Special()
     {
+        // Get a reference to the audioSource that is used for special sound effects
+        AudioSource audioSource = audioSources[1];
+
         // Retrieve soul charges for convenience
         int charges = resources.GetCharges();
-
-        // Then spend all available soul charges
-        resources.SpendSouls(charges * 20);
 
         // Check if the player is not attacking, dodging, and if he has more than 0 soul charges
         if (canAttack && !isDashing && charges > 0)
         {
+            // Then spend all available soul charges
+            resources.SpendSouls(charges * 20);
+
             specialActive = true;
 
-            // Determine which Special to cast
-            if (currentStance == "Vampire") VampireSpecial(charges);
-            if (currentStance == "Orc") OrcSpecial(charges);
-            if (currentStance == "Ghost") GhostSpecial(charges);
+            // Determine which Special to cast and assign corresponding audio
+            if (currentStance == "Vampire")
+            {
+                audioSource.clip = vampireClip;
+                VampireSpecial(charges);
+            }
+
+            if (currentStance == "Orc")
+            {
+                audioSource.clip = orcClip;
+                OrcSpecial(charges);
+            }
+
+            if (currentStance == "Ghost")
+            {
+                audioOffset = ghostAudioOffset;
+                audioSource.clip = ghostClip;
+                GhostSpecial(charges);
+            }
+
+            // Play the assigned audio clip
+            audioSource.time = audioOffset;
+            audioSource.Play();
         }
     }
 
@@ -684,6 +729,9 @@ public class PlayerController : MonoBehaviour
 
     public void SpecialEnd()
     {
+        // Stop the audio from playing
+        audioSources[1].Stop();
+
         // Reset variables
         specialDurationText.gameObject.SetActive(false);
         specialDurationImage.fillAmount = 1;
@@ -705,6 +753,12 @@ public class PlayerController : MonoBehaviour
 
     private void Dash()
     {
+        // Play the audio
+        AudioSource audioSource = audioSources[2];
+        audioSource.clip = dashClip;
+        audioSource.time = 0.05f;
+        audioSource.Play();
+
         // If the player is dashing out of an attack, the player overrides movement constraints and the animation
         if (canAttack && !isAttacking && !canMove && !canRotate)
         {
@@ -757,12 +811,12 @@ public class PlayerController : MonoBehaviour
     }
     private void DashEnd()
     {
+        // If the dash has ended while the player is attacking, DealDamage()
+        if (isAttacking) DealDamage();
+
         // Reset rigidBody interpolation and reset player velocity
         rb.interpolation = RigidbodyInterpolation.None;
         rb.velocity = Vector3.zero;
-
-        // If the dash has ended while the player is attacking, DealDamage()
-        if (isAttacking) DealDamage();
 
         // Reset booleans
         isDashing = false;
