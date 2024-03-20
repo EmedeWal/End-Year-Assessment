@@ -1011,7 +1011,6 @@ GameObject:
   m_Component:
   - component: {fileID: 355480310}
   - component: {fileID: 355480312}
-  - component: {fileID: 355480311}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1034,14 +1033,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2114892630}
   m_LocalEulerAnglesHint: {x: 40, y: 0, z: 0}
---- !u!81 &355480311
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355480309}
-  m_Enabled: 1
 --- !u!20 &355480312
 Camera:
   m_ObjectHideFlags: 0
@@ -2939,7 +2930,7 @@ MonoBehaviour:
   playerController: {fileID: 266890637}
   playerResources: {fileID: 266890635}
   playerTransform: {fileID: 266890634}
-  active: 1
+  active: 0
   enemies:
   - enemyPrefab: {fileID: 4682828495929238245, guid: b96fd0b89f7148743af71404495328d6, type: 3}
     cost: 1
@@ -3720,7 +3711,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -15
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3728,7 +3719,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -21.71
+      value: -30.72
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3758,6 +3749,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5776884065643932486, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 6871201602568147199, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: fill
       value: 
@@ -3779,9 +3774,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1504482266}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ghostDashCooldown
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcSpecialDuration
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationText
       value: 
       objectReference: {fileID: 853397332}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ghostSpecialDuration
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationImage
       value: 
@@ -3810,10 +3817,6 @@ PrefabInstance:
       propertyPath: stanceSpecialIcons.Array.data[2]
       value: 
       objectReference: {fileID: 787416477}
-    - target: {fileID: 7593186405825884342, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
-      propertyPath: m_Volume
-      value: 0.4
-      objectReference: {fileID: 0}
     - target: {fileID: 8548571301745153244, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_Name
       value: Player
@@ -7095,7 +7098,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 266890634}
-  offset: {x: 0, y: 12, z: -14}
+  offset: {x: 0, y: 14, z: -12}
   smoothTime: 0.2
 --- !u!4 &2114892630
 Transform:

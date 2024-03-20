@@ -160,11 +160,10 @@ public class PlayerResources : MonoBehaviour
         SetCurrentSouls();
     }
 
-    public void SpendSouls(int amount)
+    public void SpendSouls()
     {
         // Modify souls and handle out of bounds input
-        currentSouls -= amount;
-        if (currentSouls <= 0) currentSouls = 0;
+        currentSouls = 0;
 
         // Update the UI
         SetCurrentSouls();

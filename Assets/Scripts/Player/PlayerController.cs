@@ -18,10 +18,12 @@ public class PlayerController : MonoBehaviour
 
     [Header("References: GameObjects")]
     [SerializeField] private GameObject playerCanvas;
-    [SerializeField] private Transform attackPoint;
+    [SerializeField] private Transform lightAttackPoint;
+    [SerializeField] private Transform heavyAttackPoint;
     [SerializeField] private Animator animator;
 
     private PlayerResources resources;
+    private Transform attackPoint;
     private Rigidbody rb;
     #endregion
 
@@ -98,6 +100,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float ghostAudioOffset;
     [SerializeField] private float ghostDamageMultiplier;
     [SerializeField] private float ghostSpecialDuration;
+    [SerializeField] private float ghostDashCooldown;
     #endregion
 
     #endregion
@@ -215,6 +218,9 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        // Set the attackpoint for gizmos
+        attackPoint = lightAttackPoint;
+
         // Set the cooldown text inactive and make sure the images value is correct
         cooldownTextDash.gameObject.SetActive(false);
         cooldownImageDash.fillAmount = 0;
@@ -231,10 +237,11 @@ public class PlayerController : MonoBehaviour
         // Check if the player should move
         if (!isAttacking && !isDashing) Move();
 
-        // Handle dodge cooldown
-        if (!canDash) DashCooldown(dashCooldown);
+        // If the player is performing a lunging attack, damage all enemies in his path (provided he does not collide and stuff)
+        if (isAttacking && isDashing) DealDamage();
 
-        // Handle special timer
+        // Handle dodge cooldown and special timer
+        if (!canDash) DashCooldown(dashCooldown);
         if (specialActive) SpecialTimer(specialDuration);
     }
     #endregion
@@ -468,6 +475,9 @@ public class PlayerController : MonoBehaviour
             // Check if the hit is an enemy and it has not been damaged yet
             if (hitObject.CompareTag("Enemy") && !damagedEnemies.Contains(hitObject))
             {
+                // Add the enemy to the list
+                damagedEnemies.Add(hitObject);
+
                 // Increment the combo counter, limited to one per attack
                 if (!attackLanded)
                 {
@@ -493,9 +503,8 @@ public class PlayerController : MonoBehaviour
                 if (currentStance == "Ghost" && isLunge) damage *= ghostDamageMultiplier;
                 #endregion
 
-                // Damage the enemy and add it to the list
+                // Damage the enemy
                 eHealth.Damage(damage);
-                damagedEnemies.Add(hitObject);
 
                 // Grant the player souls
                 resources.GainSouls(soulGain);
@@ -525,7 +534,8 @@ public class PlayerController : MonoBehaviour
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Slash");
             audioSources[0].clip = lightAttackClip;
-            attackSize = new Vector3(2, 2, 3);
+            attackPoint = lightAttackPoint;
+            attackSize = new Vector3(1.8f, 1f, 2f);
             soulGain = lightAttackSoulGain;
             attackDamage = 10f;
             attackChargeTime = 0.3f;
@@ -538,7 +548,8 @@ public class PlayerController : MonoBehaviour
             // Set the right animation, attack size, and attackDuration variables
             animator.SetTrigger("Attack - Pierce");
             audioSources[0].clip = heavyAttackClip;
-            attackSize = new Vector3(1, 2, 4);
+            attackPoint = heavyAttackPoint;
+            attackSize = new Vector3(1f, 1f, 2.6f);
             soulGain = heavyAttackSoulGain;
             attackDamage = 15f;
             attackChargeTime = 0.5f;
@@ -557,14 +568,11 @@ public class PlayerController : MonoBehaviour
         // Get a reference to the audioSource that is used for special sound effects
         AudioSource audioSource = audioSources[1];
 
-        // Retrieve soul charges for convenience
-        int charges = resources.GetCharges();
-
-        // Check if the player is not attacking, dodging, and if he has more than 0 soul charges
-        if (canAttack && !isDashing && charges > 0)
+        // Check if the player is not attacking, dodging, and if he has maximum souls
+        if (canAttack && !isDashing && resources.currentSouls == 100)
         {
-            // Then spend all available soul charges
-            resources.SpendSouls(charges * 20);
+            // Then spend all souls
+            resources.SpendSouls();
 
             specialActive = true;
 
@@ -572,20 +580,20 @@ public class PlayerController : MonoBehaviour
             if (currentStance == "Vampire")
             {
                 audioSource.clip = vampireClip;
-                VampireSpecial(charges);
+                VampireSpecial();
             }
 
             if (currentStance == "Orc")
             {
                 audioSource.clip = orcClip;
-                OrcSpecial(charges);
+                OrcSpecial();
             }
 
             if (currentStance == "Ghost")
             {
                 audioOffset = ghostAudioOffset;
                 audioSource.clip = ghostClip;
-                GhostSpecial(charges);
+                GhostSpecial();
             }
 
             // Play the assigned audio clip
@@ -594,13 +602,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void VampireSpecial(int charges)
+    private void VampireSpecial()
     {
-        // Local variables to keep track of the base amount of bleed ticks for the special
-        float ticks = vampireSpecialTicks * charges;
-
         // Set up special timer
-        SpecialTimerSetup(ticks);
+        SpecialTimerSetup(vampireSpecialTicks);
 
         // Trigger visuals
         StartCoroutine(VampireSpecialGFX());
@@ -619,12 +624,12 @@ public class PlayerController : MonoBehaviour
                 /* Inflict bleed upon all enemies hit. 
                  * The damage is much smaller than a normal bleed, but the duration depends on charges 
                  * Two bleed ticks per charge. (max 10 ticks of 1 damage) */
-                eHealth.Bleed(bleedDamage, ticks, 1f, true);
+                eHealth.Bleed(bleedDamage, vampireSpecialTicks, 1f, true);
             }
         }
 
         // Regardless of enemies hit, call EndSpecial after the duration
-        Invoke(nameof(SpecialEnd), ticks);
+        Invoke(nameof(SpecialEnd), vampireSpecialTicks);
     }
 
     private IEnumerator VampireSpecialGFX()
@@ -654,40 +659,37 @@ public class PlayerController : MonoBehaviour
         playerCanvas.SetActive(false);
     }
 
-    private void OrcSpecial(int charges)
+    private void OrcSpecial()
     {
-        // Set up variables
-        float finalSpecialDuration = orcSpecialDuration * charges;
-
         // Set up special timer
-        SpecialTimerSetup(finalSpecialDuration);
+        SpecialTimerSetup(orcSpecialDuration);
 
         // Become invulnerable to damage for the duration of the special
-        invincibleCoroutine = StartCoroutine(Invincible(finalSpecialDuration));
-        Invoke(nameof(SpecialEnd), finalSpecialDuration);
+        invincibleCoroutine = StartCoroutine(Invincible(orcSpecialDuration));
+        Invoke(nameof(SpecialEnd), orcSpecialDuration);
     }
 
-    private void GhostSpecial(int charges)
+    private void GhostSpecial()
     {
         // Set up special timer and start the effect
-        SpecialTimerSetup(ghostSpecialDuration * charges);
-        StartCoroutine(GhostSpecialEffect(charges));
+        SpecialTimerSetup(ghostSpecialDuration);
+        StartCoroutine(GhostSpecialEffect());
     }
 
-    private IEnumerator GhostSpecialEffect(int charges)
+    private IEnumerator GhostSpecialEffect()
     {
         // Upon activation, make sure the dodge's cooldown is reset
         DashReset();
 
-        // Reduce the dodge cooldown by 1 second for each charge and allow the player to pass through enemies
-        dashCooldown -= 1 * charges;
+        // Reduce dash cooldown and allow the player to pass through enemies
+        dashCooldown -= ghostDashCooldown;
         Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
 
         // This takes effect for as long as the duration * charges
-        yield return new WaitForSeconds(ghostSpecialDuration * charges);
+        yield return new WaitForSeconds(ghostSpecialDuration);
 
         // Revert effects
-        dashCooldown += 1 * charges;
+        dashCooldown += ghostDashCooldown;
         Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
 
         // End the special
@@ -811,10 +813,7 @@ public class PlayerController : MonoBehaviour
     }
     private void DashEnd()
     {
-        // If the dash has ended while the player is attacking, DealDamage()
-        if (isAttacking) DealDamage();
-
-        // Reset rigidBody interpolation and reset player velocity
+        // Reset rigidBody states and reset player velocity
         rb.interpolation = RigidbodyInterpolation.None;
         rb.velocity = Vector3.zero;
 
@@ -869,8 +868,12 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = Color.red;
 
         // Draw the cube using the attackPoint's position and rotation
-        Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, attackSize);
+        if (attackPoint != null)
+        {
+            Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
+            Gizmos.DrawWireCube(Vector3.zero, attackSize);
+
+        }
 
         //For the vampire special
         //Gizmos.color = Color.red;
