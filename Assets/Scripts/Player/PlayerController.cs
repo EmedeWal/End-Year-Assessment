@@ -28,7 +28,9 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Audio Sources
+    [Header("AUDIO")]
     [SerializeField] private AudioSource[] audioSources;
+    [SerializeField] private AudioSource music;
     #endregion
 
     #endregion
@@ -40,12 +42,14 @@ public class PlayerController : MonoBehaviour
     private int soulGain;
 
     private float audioOffset = 0;
+    private float audioVolume = 0;
     #endregion 
 
     // End of Variables
 
     #region EVENTS
 
+    [Header("EVENTS")]
     public UnityEvent die;
     #endregion
 
@@ -74,32 +78,47 @@ public class PlayerController : MonoBehaviour
 
     #region Vampire Stance
 
-    [Header("Vampire Stance")]
+    [Header("Vampire Stance: Audio")]
     [SerializeField] private AudioClip vampireClip;
+    [SerializeField] private float vampireAudioOffset;
+    [SerializeField] private float vampireAudioVolume;
+
+    [Header("Vampire Stance: Variables")]
     [SerializeField] private float bleedDamage;
     [SerializeField] private float bleedTicks;
     [SerializeField] private float bleedIntervals;
 
-    [SerializeField] private Image vampireSpecialGFX;
-    [SerializeField] private float vampireSpecialTicks;
-    [SerializeField] private float vampireSpecialRange;
+    [SerializeField] private Image vampireUltGFX;
+    [SerializeField] private float vampireUltTicks;
+    [SerializeField] private float vampireUltRange;
     #endregion
 
     #region Orc Stance
 
-    [Header("Orc Stance")]
+    [Header("Orc Stance: Audio")]
     [SerializeField] private AudioClip orcClip;
+    [SerializeField] private float orcAudioOffset;
+    [SerializeField] private float orcAudioVolume;
+
+    [Header("Orc Stance: Variables")]
+    [SerializeField] private GameObject shockwaveCanvas;
     [SerializeField] private float orcDamageMultiplier;
-    [SerializeField] private float orcSpecialDuration;
+    [SerializeField] private float orcUltDuration;
+    [SerializeField] private float shockwaveRange;
+    [SerializeField] private float shockwaveModifier;
+    private bool orcUltActive = false;
     #endregion
 
     #region Ghost Stance
 
-    [Header("Ghost Stance")]
+    [Header("Ghost Stance: Audio")]
     [SerializeField] private AudioClip ghostClip;
     [SerializeField] private float ghostAudioOffset;
+    [SerializeField] private float ghostAudioVolume;
+
+    [Header("Ghost Stance: Variables")]
     [SerializeField] private float ghostDamageMultiplier;
-    [SerializeField] private float ghostSpecialDuration;
+    [SerializeField] private float ghostUltDuration;
     [SerializeField] private float ghostDashCooldown;
     #endregion
 
@@ -143,28 +162,28 @@ public class PlayerController : MonoBehaviour
 
     // End of Attacking
 
-    #region SPECIAL
+    #region ULTIMATE
 
-    [Header("SPECIAL")]
+    [Header("ULTIMATE")]
 
     #region User Interface
     [Header("User Interface")]
-    [SerializeField] private GameObject[] stanceSpecialIcons;
-    [SerializeField] private TextMeshProUGUI specialDurationText;
-    [SerializeField] private Image specialDurationImage;
+    [SerializeField] private GameObject[] stanceUltIcons;
+    [SerializeField] private TextMeshProUGUI ultDurationText;
+    [SerializeField] private Image ultDurationImage;
     #endregion
 
     #region Variables
 
-    [HideInInspector] public bool specialActive;
+    [HideInInspector] public bool ultActive;
 
-    private float specialDuration;
-    private float specialCountdown;
+    private float ultDuration;
+    private float ultCountdown;
     #endregion
 
     #endregion
 
-    // End of Special
+    // End of Ultimate
 
     #region DASHING
 
@@ -225,8 +244,8 @@ public class PlayerController : MonoBehaviour
         cooldownTextDash.gameObject.SetActive(false);
         cooldownImageDash.fillAmount = 0;
 
-        specialDurationText.gameObject.SetActive(false);
-        specialDurationImage.fillAmount = 1f;
+        ultDurationText.gameObject.SetActive(false);
+        ultDurationImage.fillAmount = 1f;
 
         // Swap to the correct stance at the beginning of the game
         SwapStance();
@@ -242,7 +261,7 @@ public class PlayerController : MonoBehaviour
 
         // Handle dodge cooldown and special timer
         if (!canDash) DashCooldown(dashCooldown);
-        if (specialActive) SpecialTimer(specialDuration);
+        if (ultActive) UltimateTimer(ultDuration);
     }
     #endregion
 
@@ -289,13 +308,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void OnSpecial(InputAction.CallbackContext context)
+    public void OnUltimate(InputAction.CallbackContext context)
     {
         // When the button is pressed
         if (context.phase == InputActionPhase.Performed)
         {
             // If the player has no special active, cast a special
-            if (!specialActive) Special();
+            if (!ultActive) Ultimate();
         }
     }
 
@@ -352,10 +371,10 @@ public class PlayerController : MonoBehaviour
         swordRenderer.material.color = stanceColors[stancePosition];
 
         // Check if there is a special going on. If not, then swap to the correct special stance icon
-        if (!specialActive)
+        if (!ultActive)
         {
-            foreach (GameObject specialIcon in stanceSpecialIcons) specialIcon.SetActive(false);
-            stanceSpecialIcons[stancePosition].SetActive(true);
+            foreach (GameObject specialIcon in stanceUltIcons) specialIcon.SetActive(false);
+            stanceUltIcons[stancePosition].SetActive(true);
         }
     }
 
@@ -478,12 +497,8 @@ public class PlayerController : MonoBehaviour
                 // Add the enemy to the list
                 damagedEnemies.Add(hitObject);
 
-                // Increment the combo counter, limited to one per attack
-                if (!attackLanded)
-                {
-                    attackLanded = true;
-                    AttackCombo();
-                }
+                // Increment combo counter before the attack lands
+                if (!attackLanded) AttackCombo();              
 
                 // Retrieve the health script on the enemy
                 Health eHealth = hit.GetComponent<Health>();
@@ -503,11 +518,20 @@ public class PlayerController : MonoBehaviour
                 if (currentStance == "Ghost" && isLunge) damage *= ghostDamageMultiplier;
                 #endregion
 
+                // This code is only executed once per block
+                if (!attackLanded)
+                {
+                    attackLanded = true;
+
+                    // Grant the player souls
+                    resources.GainSouls(soulGain);
+
+                    // If the Orc Ult is active is active, attacks cause a small wave around the target that damages enemies
+                    if (orcUltActive) OrcUltimateShockwave(hitObject, damage);
+                }
+
                 // Damage the enemy
                 eHealth.Damage(damage);
-
-                // Grant the player souls
-                resources.GainSouls(soulGain);
             }
         }
     }
@@ -561,9 +585,9 @@ public class PlayerController : MonoBehaviour
 
     // End of Attacking
 
-    #region SPECIAL
+    #region ULTIMATE
 
-    private void Special()
+    private void Ultimate()
     {
         // Get a reference to the audioSource that is used for special sound effects
         AudioSource audioSource = audioSources[1];
@@ -574,44 +598,53 @@ public class PlayerController : MonoBehaviour
             // Then spend all souls
             resources.SpendSouls();
 
-            specialActive = true;
+            ultActive = true;
 
-            // Determine which Special to cast and assign corresponding audio
+            // Determine which Ultimate to cast and assign corresponding audio
             if (currentStance == "Vampire")
             {
+                audioOffset = vampireAudioOffset;
+                audioVolume = vampireAudioVolume;
                 audioSource.clip = vampireClip;
-                VampireSpecial();
+                VampireUltimate();
             }
 
             if (currentStance == "Orc")
             {
+                audioOffset = orcAudioOffset;
+                audioVolume = orcAudioVolume;
                 audioSource.clip = orcClip;
-                OrcSpecial();
+                OrcUltimate();
             }
 
             if (currentStance == "Ghost")
             {
                 audioOffset = ghostAudioOffset;
+                audioVolume = ghostAudioVolume;
                 audioSource.clip = ghostClip;
-                GhostSpecial();
+                GhostUltimate();
             }
 
             // Play the assigned audio clip
+            audioSource.volume = audioVolume;
             audioSource.time = audioOffset;
             audioSource.Play();
+
+            // Make the default music softer
+            music.volume = 0.01f;
         }
     }
 
-    private void VampireSpecial()
+    private void VampireUltimate()
     {
         // Set up special timer
-        SpecialTimerSetup(vampireSpecialTicks);
+        UltimateTimerSetup(vampireUltTicks);
 
         // Trigger visuals
-        StartCoroutine(VampireSpecialGFX());
+        StartCoroutine(VampireUltimateGFX());
 
         // Cast a big ass circle and collect all colliders
-        Collider[] hits = Physics.OverlapSphere(transform.position, vampireSpecialRange);
+        Collider[] hits = Physics.OverlapSphere(transform.position, vampireUltRange);
 
         foreach (Collider hit in hits)
         {
@@ -624,22 +657,22 @@ public class PlayerController : MonoBehaviour
                 /* Inflict bleed upon all enemies hit. 
                  * The damage is much smaller than a normal bleed, but the duration depends on charges 
                  * Two bleed ticks per charge. (max 10 ticks of 1 damage) */
-                eHealth.Bleed(bleedDamage, vampireSpecialTicks, 1f, true);
+                eHealth.Bleed(bleedDamage, vampireUltTicks, 1f, true);
             }
         }
 
         // Regardless of enemies hit, call EndSpecial after the duration
-        Invoke(nameof(SpecialEnd), vampireSpecialTicks);
+        Invoke(nameof(UltimateEnd), vampireUltTicks);
     }
 
-    private IEnumerator VampireSpecialGFX()
+    private IEnumerator VampireUltimateGFX()
     {
         playerCanvas.SetActive(true);
 
         // Some local variables to keep things cleaner
-        RectTransform size = vampireSpecialGFX.rectTransform;
+        RectTransform size = vampireUltGFX.rectTransform;
         Vector2 nativeSize = size.sizeDelta;
-        Vector2 maxSize = new Vector2(vampireSpecialRange, vampireSpecialRange);
+        Vector2 maxSize = new Vector2(vampireUltRange, vampireUltRange);
         float increment = 0.3f;
         float pause = 0.01f;
 
@@ -659,24 +692,66 @@ public class PlayerController : MonoBehaviour
         playerCanvas.SetActive(false);
     }
 
-    private void OrcSpecial()
+    private void OrcUltimate()
     {
         // Set up special timer
-        SpecialTimerSetup(orcSpecialDuration);
+        UltimateTimerSetup(orcUltDuration);
 
         // Become invulnerable to damage for the duration of the special
-        invincibleCoroutine = StartCoroutine(Invincible(orcSpecialDuration));
-        Invoke(nameof(SpecialEnd), orcSpecialDuration);
+        invincibleCoroutine = StartCoroutine(Invincible(orcUltDuration));
+
+        // Your attacks cause a small area of effect around your target
+        orcUltActive = true;
+
+        // End the special
+        Invoke(nameof(UltimateEnd), orcUltDuration);
     }
 
-    private void GhostSpecial()
+    private void OrcUltimateShockwave(GameObject target, float damage)
+    {
+        // Set up correct layer detection
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+        int layerMask = 1 << enemyLayer;
+
+        // Retrieve the VFX origin and instantiate the VFX
+        Transform origin = target.transform.Find("VFX Origin");
+        StartCoroutine(OrcUltimateGFX(origin));
+
+        // Store all enemies hit by the shockwave in a collider array
+        Collider[] hits = Physics.OverlapSphere(target.transform.position, shockwaveRange, layerMask);
+
+        foreach (Collider hit in hits)
+        {
+            // Ensure the shockwave doesn't affect the target itself
+            if (hit.gameObject == target) continue;
+
+            // Check for a health script and ensure the object is an enemy but not the original target
+            Health eHealth = hit.GetComponent<Health>();
+
+            // Damage the enemies by the shockwave
+            if (eHealth != null && !damagedEnemies.Contains(hit.gameObject)) eHealth.Damage(damage / shockwaveModifier);
+        }
+    }
+
+    private IEnumerator OrcUltimateGFX(Transform origin)
+    {
+        // Instantiate the VFX at the target location
+        GameObject VFX = Instantiate(shockwaveCanvas, origin);
+
+        // Wait a tiny while before dissappearing
+        yield return new WaitForSeconds(1f);
+
+        Destroy(VFX); 
+    }
+
+    private void GhostUltimate()
     {
         // Set up special timer and start the effect
-        SpecialTimerSetup(ghostSpecialDuration);
-        StartCoroutine(GhostSpecialEffect());
+        UltimateTimerSetup(ghostUltDuration);
+        StartCoroutine(GhostUltimateEffect());
     }
 
-    private IEnumerator GhostSpecialEffect()
+    private IEnumerator GhostUltimateEffect()
     {
         // Upon activation, make sure the dodge's cooldown is reset
         DashReset();
@@ -686,70 +761,99 @@ public class PlayerController : MonoBehaviour
         Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
 
         // This takes effect for as long as the duration * charges
-        yield return new WaitForSeconds(ghostSpecialDuration);
+        yield return new WaitForSeconds(ghostUltDuration);
 
         // Revert effects
         dashCooldown += ghostDashCooldown;
         Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
 
         // End the special
-        SpecialEnd();
+        UltimateEnd();
     }
 
-    private void SpecialTimerSetup(float duration)
+    private void UltimateTimerSetup(float duration)
     {
         // Modify variables
-        specialDuration = duration;
-        specialCountdown = specialDuration;
-        specialActive = true;
+        ultDuration = duration;
+        ultCountdown = ultDuration;
+        ultActive = true;
 
         // Set the right color for the text component
         Color color = stanceColors[stancePosition];
-        specialDurationText.color = color;
+        ultDurationText.color = color;
 
         // Set the text active
-        specialDurationText.gameObject.SetActive(true);
+        ultDurationText.gameObject.SetActive(true);
     }
 
-    private void SpecialTimer(float duration)
+    private void UltimateTimer(float duration)
     {
-        specialCountdown -= Time.deltaTime;
+        ultCountdown -= Time.deltaTime;
 
         // Is the duration zero?
-        if (specialCountdown <= 0)
+        if (ultCountdown <= 0)
         {
             // End the special
-            SpecialEnd();
+            UltimateEnd();
         }
         else
         {
             // Set the UI to accurate values
-            specialDurationText.text = Mathf.RoundToInt(specialCountdown).ToString();
-            specialDurationImage.fillAmount = 1 - (specialCountdown / duration);
+            ultDurationText.text = Mathf.RoundToInt(ultCountdown).ToString();
+            ultDurationImage.fillAmount = 1 - (ultCountdown / duration);
         }
     }
 
-    public void SpecialEnd()
+    public void UltimateEnd()
     {
-        // Stop the audio from playing
-        audioSources[1].Stop();
-
         // Reset variables
-        specialDurationText.gameObject.SetActive(false);
-        specialDurationImage.fillAmount = 1;
-        specialActive = false;
+        ultDurationText.gameObject.SetActive(false);
+        ultDurationImage.fillAmount = 1;
+        ultActive = false;
+
+        // If the orc ult was active, it is now not
+        if (orcUltActive) orcUltActive = false;
 
         // Set the text inactive       
-        specialDurationText.gameObject.SetActive(false);
+        ultDurationText.gameObject.SetActive(false);
 
         // Swap back to the correct special stance icon
-        foreach (GameObject specialIcon in stanceSpecialIcons) specialIcon.SetActive(false);
-        stanceSpecialIcons[stancePosition].SetActive(true);
+        foreach (GameObject ultIcon in stanceUltIcons) ultIcon.SetActive(false);
+        stanceUltIcons[stancePosition].SetActive(true);
+
+        // The audio fades out and normal audio fades in
+        StartCoroutine(UltimateAudioFadeOut());
+    }
+
+    private IEnumerator UltimateAudioFadeOut()
+    {
+        // Get a reference to the audioSource that is used for special sound effects
+        AudioSource audioSource = audioSources[1];
+
+        // Local floats. Audio decreases relative to the specific volume
+        float audioModification = audioSource.volume / 100;
+        float audioDelay = 0.01f;
+
+        // Gradually decrease the volume
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= audioModification;
+            yield return new WaitForSeconds(audioDelay);
+        }
+
+        audioSource.Stop();
+
+        // Make the default music louder
+        while (music.volume < 0.1f)
+        {
+            music.volume += 0.001f;
+            yield return new WaitForSeconds(audioDelay);
+        }
     }
 
     #endregion
 
-    // End of Special
+    // End of Ultimate
 
     #region DASHING
 
@@ -864,20 +968,21 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // For the attack
-        Gizmos.color = Color.red;
-
         // Draw the cube using the attackPoint's position and rotation
         if (attackPoint != null)
         {
+            Gizmos.color = Color.red;
             Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
             Gizmos.DrawWireCube(Vector3.zero, attackSize);
 
         }
 
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, shockwaveRange);
+
         //For the vampire special
         //Gizmos.color = Color.red;
-        //Gizmos.DrawWireSphere(transform.position, vampireSpecialRange);
+        //Gizmos.DrawWireSphere(transform.position, vampireUltRange);
     }
 
     #endregion

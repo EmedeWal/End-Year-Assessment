@@ -238,7 +238,7 @@ GameObject:
   m_Component:
   - component: {fileID: 30148357}
   m_Layer: 5
-  m_Name: Dash Cooldown
+  m_Name: Dashing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2595,7 +2595,7 @@ GameObject:
   m_Component:
   - component: {fileID: 791632485}
   m_Layer: 5
-  m_Name: Special Timer
+  m_Name: Ultimate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2671,7 +2671,7 @@ GameObject:
   - component: {fileID: 853397333}
   - component: {fileID: 853397332}
   m_Layer: 5
-  m_Name: Duration Text Special
+  m_Name: Ultimate Duration Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3157,7 +3157,7 @@ GameObject:
   m_Component:
   - component: {fileID: 908802889}
   m_Layer: 5
-  m_Name: Cooldown Icons
+  m_Name: Cooldown System
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3749,6 +3749,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1421254542179064651, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_Volume
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_ActionEvents.Array.data[2].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 266890637}
+    - target: {fileID: 3785289948086015287, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_ActionEvents.Array.data[2].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnUltimate
+      objectReference: {fileID: 0}
     - target: {fileID: 5776884065643932486, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.25
@@ -3766,9 +3778,73 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 254415442}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: music
+      value: 
+      objectReference: {fileID: 1493507026}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcClip
+      value: 
+      objectReference: {fileID: 8300000, guid: bea1f1f3a1b134f508156835fb15516a, type: 3}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcUltGFX
+      value: 
+      objectReference: {fileID: 9184332353629254788, guid: 6a886bbbdf222db46aaedb433e0bcdf0, type: 3}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 7e34e57f4296727459eb521806c3b466, type: 3}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireUltGFX
+      value: 
+      objectReference: {fileID: 1803940781}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcAudioOffset
+      value: 21
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcAudioVolume
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: orcUltDuration
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: shockwaveRange
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: shockwaveCanvas
+      value: 
+      objectReference: {fileID: 5024009746357069194, guid: ec3f674830402cc45bce805cf6493db7, type: 3}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ultDurationText
+      value: 
+      objectReference: {fileID: 853397332}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireUltRange
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireUltTicks
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: cooldownTextDash
       value: 
       objectReference: {fileID: 1832193525}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ghostAudioVolume
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ghostUltDuration
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ultDurationImage
+      value: 
+      objectReference: {fileID: 1146341469}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: cooldownImageDash
       value: 
@@ -3778,8 +3854,28 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: shockwaveModifier
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: orcSpecialDuration
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireAudioOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: vampireAudioVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: heavyAttackSoulGain
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: lightAttackSoulGain
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: specialDurationText
@@ -3794,6 +3890,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1146341469}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: ghostDamageMultiplier
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: stanceIcons.Array.data[0]
       value: 
       objectReference: {fileID: 507921030}
@@ -3806,6 +3906,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 131855231}
     - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: stanceUltIcons.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: stanceUltIcons.Array.data[0]
+      value: 
+      objectReference: {fileID: 1342926323}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: stanceUltIcons.Array.data[1]
+      value: 
+      objectReference: {fileID: 1027738463}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: stanceUltIcons.Array.data[2]
+      value: 
+      objectReference: {fileID: 787416477}
+    - target: {fileID: 7329571035110700831, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: stanceSpecialIcons.Array.data[0]
       value: 
       objectReference: {fileID: 1342926323}
@@ -3817,6 +3933,10 @@ PrefabInstance:
       propertyPath: stanceSpecialIcons.Array.data[2]
       value: 
       objectReference: {fileID: 787416477}
+    - target: {fileID: 7593186405825884342, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+      propertyPath: m_Volume
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 8548571301745153244, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_Name
       value: Player
@@ -3976,7 +4096,7 @@ GameObject:
   - component: {fileID: 1146341470}
   - component: {fileID: 1146341469}
   m_Layer: 5
-  m_Name: Duration Image Special
+  m_Name: Ultimate Duration Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4051,7 +4171,7 @@ GameObject:
   - component: {fileID: 1279739879}
   - component: {fileID: 1279739878}
   m_Layer: 5
-  m_Name: Sprite
+  m_Name: Cooldown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5000,7 +5120,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: d63fc41aa021371489bd92f92e2af116, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.2
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -5111,7 +5231,7 @@ GameObject:
   - component: {fileID: 1504482267}
   - component: {fileID: 1504482266}
   m_Layer: 5
-  m_Name: Cooldown Image Dodge
+  m_Name: Dash Cooldown Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5585,6 +5705,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1776347707}
   m_CullTransparentMesh: 1
+--- !u!114 &1803940781 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 463203988367990435, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
+  m_PrefabInstance: {fileID: 1060048160}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1809261191
 GameObject:
   m_ObjectHideFlags: 0
@@ -5777,7 +5908,7 @@ GameObject:
   - component: {fileID: 1832193526}
   - component: {fileID: 1832193525}
   m_Layer: 5
-  m_Name: Cooldown Text Dodge
+  m_Name: Dash Cooldown Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6830,7 +6961,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2101251167}
   m_Layer: 5
-  m_Name: Stance UI
+  m_Name: Ultimate Icons
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

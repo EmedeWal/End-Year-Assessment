@@ -183,7 +183,7 @@ public class Health : MonoBehaviour
             SetBleed(damage, ticks, intervals, true);
         }
 
-        // Special bleeds cannot be overridden
+        // Ultimate bleeds cannot be overridden
         if (isCursed) return;
 
         // Set a regular bleed
