@@ -4,7 +4,23 @@ using UnityEngine.AI;
 
 public class SkeletonAI : MonoBehaviour
 {
-    #region References
+    #region !SETUP!
+
+    #region ENUM
+
+    public enum EnemyState
+    {
+        Chasing,
+        Charging,
+        Attacking,
+    }
+
+    public EnemyState currentState = EnemyState.Chasing;
+    #endregion
+
+    // End of Enum
+
+    #region REFERENCES
 
     [Header("References")]
     [SerializeField] private Transform attackPoint;
@@ -15,48 +31,37 @@ public class SkeletonAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private Enemy enemy;
-
     #endregion
 
-    //
+    // End of References
 
-    #region Enum
-
-    public enum State
-    {
-        Idle,
-        Chase,
-        Attack
-    }
-
-    public State state = State.Chase;
-
-    #endregion
-
-    //
-
-    #region Variables
+    #region VARIABLES
 
     [Header("Variables: Attacking")]
     [SerializeField] private Vector3 attackSize;
-    [SerializeField] private float attackDuration;
     [SerializeField] private float attackDamage;
+    [SerializeField] private float attackChargeTime;
+    [SerializeField] private float attackDuration;
     [SerializeField] private float attackRange;
     [SerializeField] private float attackCD;
 
+    private bool canAttack = true;
+
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private float rotationModifier;
     [SerializeField] private float deathDelay;
+    #endregion
 
-    private Coroutine attackReset;
-    private bool canAttack = true;
-    private bool isAttacking;
+    // End of Attacking
 
     #endregion
 
-    //
+    // END OF SETUP
 
-    #region Default
+    #region !EXECUTION!
+
+    #region DEFAULT
 
     private void Start()
     {
@@ -69,47 +74,28 @@ public class SkeletonAI : MonoBehaviour
 
     private void Update()
     {
-        // Set animations
-        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
-
-        // Store the result of the range check
-        bool inRange = InRange();
-
-        // If the enemy is attacking, stop checking stuff
-        if (isAttacking) return;
-
-        // If the player is in the attackRange and if the enemy can attack
-        if (inRange && canAttack) UpdateBehaviour(State.Attack);
-
-        // If the player is in the attackRange, the enemy should idle
-        else if (inRange) UpdateBehaviour(State.Idle);
-
-        // The enemy should move towards the player
-        else UpdateBehaviour(State.Chase);
+        UpdateBehaviour();
     }
 
     #endregion 
 
-    //
+    // End of Default
 
-    #region Behavior
+    #region BEHAVIOUR
 
-    private void UpdateBehaviour(State newState)
+    private void UpdateBehaviour()
     {
-        // Determine which state to swap to
-        state = newState;
-
-        switch (state)
+        switch (currentState)
         {
-            case State.Idle:
-                Idle();
-                break;
-
-            case State.Chase:
+            case EnemyState.Chasing:
                 Chase();
                 break;
 
-            case State.Attack:
+            case EnemyState.Charging:
+                RotateTowardsPlayer();
+                break;
+
+            case EnemyState.Attacking:
                 Attack();
                 break;
         }
@@ -124,115 +110,175 @@ public class SkeletonAI : MonoBehaviour
 
     #endregion
 
-    //
+    // End of Behavior
 
-    #region States
+    #region STATES
 
-    private void Idle()
-    {
-        // Make sure the enemy is not moving, but rotating towards the player
-        agent.SetDestination(transform.position);
-
-        // Determine the target rotation
-        Quaternion targetRotation = Quaternion.LookRotation(player.position - transform.position);
-
-        // Interpolate the enemy's rotation towards the target rotation
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-    }
+    #region Chasing
 
     private void Chase()
     {
-        // make sure the enemy moves towards the player
+        // If the player is recharging from an attack, only rotate towards the player but do not follow him
+        if (!canAttack)
+        {
+            RotateTowardsPlayer();
+            return;
+        }
+
+        // If the player is in range, start to attack
+        if (InRange())
+        {
+            currentState = EnemyState.Attacking;
+            return;
+        }
+
+        // The enemy moves towards the player
         agent.SetDestination(player.position);
+        animator.SetFloat("Speed", agent.velocity.magnitude);
     }
+    #endregion
+
+    #region Charging
+
+    private void RotateTowardsPlayer()
+    {
+        // Rotate towards the player
+        Vector3 direction = (player.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+    }
+    #endregion
 
     #region Attacking
 
     private void Attack()
     {
+        if (!canAttack) return;
+
+        // Enemy rotates towards the player while charging
+        currentState = EnemyState.Charging;
         canAttack = false;
-        isAttacking = true;
 
-        // Make the sure the enemy stands still
-        agent.SetDestination(transform.position);
+        CancelMovement();
 
-        // Play the animation
         animator.SetTrigger("Attack");
 
-        // Reset the attack after the cooldown has passed
-        attackReset = StartCoroutine(AttackReset());
+        // Make the enemy rotate faster to give more tracking
+        rotationSpeed *= rotationModifier;
 
-        // Calculate when the enemy is done attacking
-        StartCoroutine(AttackTracking());
+        // Start charging the attack
+        Invoke(nameof(AttackStart), attackChargeTime);
+    }
 
-        // Apply the damage
-        StartCoroutine(ApplyDamage());
+    private void AttackStart()
+    {
+        // Lock enemy rotation and position
+        currentState = EnemyState.Attacking;
+
+        DealDamage();
+
+        // Start recovery of the attack, after the attackduration
+        Invoke(nameof(StartRecovery), attackDuration);
+
+        // Reset to the default rotation speed 
+        rotationSpeed /= rotationModifier;
     }
 
     private IEnumerator AttackReset()
     {
+        // Wait for the attackCD to attack again
         yield return new WaitForSeconds(attackCD);
+
+        // Booleans
         canAttack = true;
     }
 
-    private IEnumerator AttackTracking()
+    private void StartRecovery()
     {
-        yield return new WaitForSeconds(attackDuration);
-        isAttacking = false;
+        currentState = EnemyState.Chasing;
+        StartCoroutine(AttackReset());
     }
 
-    private IEnumerator ApplyDamage()
+    private void DealDamage()
     {
-        // Apply the damage halfway through the animation
-        yield return new WaitForSeconds(attackDuration / 2);
-
+        // Retrieve all detected colliders
         Collider[] hits = Physics.OverlapBox(attackPoint.position, attackSize);
 
         foreach (Collider hit in hits)
         {
-            if (hit.gameObject.CompareTag("Player"))
+            GameObject hitObject = hit.gameObject;
+
+            // Check if the hit is an enemy and it has not been damaged yet
+            if (hitObject.CompareTag("Player"))
             {
-                PlayerResources pHealth = hit.GetComponent<PlayerResources>();
-                if (pHealth != null) pHealth.Damage(attackDamage);
+                // Retrieve the health script on the player and damage him
+                PlayerResources pHealth = hitObject.GetComponent<PlayerResources>();
+                pHealth.Damage(attackDamage);
             }
         }
     }
+    #endregion
 
     #endregion
 
-    //
+    // End of States
 
+    #region OTHER
+
+    private void CancelMovement()
+    {
+        agent.SetDestination(transform.position);
+        animator.SetFloat("Speed", 0f);
+    }
     #endregion
 
-    //
+    // End of Other
 
     #region Events
 
     public void Stagger()
     {
-        // Reset AttackReset()
-        if (attackReset != null && !isAttacking)
-        {
-            animator.SetTrigger("Stagger");
+        // Reset the enemy's attack CD, but make sure to reset it again later
+        StopAllCoroutines();
+        StartCoroutine(AttackReset());
+        canAttack = false;
 
-            canAttack = false;
-            StopCoroutine(attackReset);
-            attackReset = StartCoroutine(AttackReset());
+        // Animation
+        animator.SetTrigger("Stagger");
+
+        // If the enemy is interrupted while charing his attack, execute the following the code
+        if (currentState == EnemyState.Charging)
+        {
+            // Cancel the attack start
+            CancelInvoke(nameof(AttackStart));
+
+            // Start recovery of the attack, after the attackduration
+            Invoke(nameof(StartRecovery), attackDuration);
+
+            // Reset to the default rotation speed 
+            rotationSpeed /= rotationModifier;
         }
+
+        // If the enemy is hit while moving, stop him in his tracks
+        else if (currentState == EnemyState.Chasing) CancelMovement();
     }
+
     public void Death()
     {
         // Play the animation and remove enemy intelligence
         animator.SetTrigger("Death");
-
+        agent.SetDestination(transform.position);
         enemy.Die();
-
         Destroy(this);
     }
 
     #endregion
 
-    //
+    // End of Events
+
+    #endregion
+
+    // END OF EXECUTION
 
     private void OnDrawGizmosSelected()
     {

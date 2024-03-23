@@ -132,6 +132,11 @@ public class PlayerResources : MonoBehaviour
         // Check if the player is invulnerable
         if (invincible) return;
 
+        //  Make sure no weird shenanigans happens with negative numbers
+        if (amount < 0) amount = 0;
+
+        Debug.Log("Player took " + amount + " damage.");
+
         // If active, interrupt passive healing
         if (healingCoroutine != null) StopCoroutine(healingCoroutine);
 

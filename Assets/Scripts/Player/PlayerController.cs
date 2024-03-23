@@ -285,7 +285,7 @@ public class PlayerController : MonoBehaviour
         // When the button is pressed
         if (context.phase == InputActionPhase.Performed)
         {
-            // If the player can Attack and is not dashing, cast a light attack
+            // If the player can Attacking and is not dashing, cast a light attack
             if (canAttack && !isDashing)
             {
                 SetAttackVariables("Light");
@@ -299,7 +299,7 @@ public class PlayerController : MonoBehaviour
         // When the button is pressed
         if (context.phase == InputActionPhase.Performed)
         {
-            // If the player can Attack and is not dashing, cast a heavy attack
+            // If the player can Attacking and is not dashing, cast a heavy attack
             if (canAttack && !isDashing)
             {
                 SetAttackVariables("Heavy");
@@ -559,7 +559,7 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Attack - Slash");
             audioSources[0].clip = lightAttackClip;
             attackPoint = lightAttackPoint;
-            attackSize = new Vector3(1.8f, 1f, 2f);
+            attackSize = new Vector3(2f, 1f, 2f);
             soulGain = lightAttackSoulGain;
             attackDamage = 10f;
             attackChargeTime = 0.3f;
@@ -573,7 +573,7 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Attack - Pierce");
             audioSources[0].clip = heavyAttackClip;
             attackPoint = heavyAttackPoint;
-            attackSize = new Vector3(1f, 1f, 2.6f);
+            attackSize = new Vector3(1.5f, 1f, 3f);
             soulGain = heavyAttackSoulGain;
             attackDamage = 15f;
             attackChargeTime = 0.5f;
@@ -966,24 +966,22 @@ public class PlayerController : MonoBehaviour
 
     //
 
-    private void OnDrawGizmosSelected()
-    {
-        // Draw the cube using the attackPoint's position and rotation
-        if (attackPoint != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
-            Gizmos.DrawWireCube(Vector3.zero, attackSize);
+    //private void OnDrawGizmosSelected()
+    //{
+    //    if (attackPoint != null)
+    //    {
+    //        Gizmos.color = Color.red;
+    //        Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
+    //        Gizmos.DrawWireCube(Vector3.zero, attackSize);
 
-        }
+    //    }
 
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, shockwaveRange);
+    //    Gizmos.color = Color.green;
+    //    Gizmos.DrawWireSphere(transform.position, shockwaveRange);
 
-        //For the vampire special
-        //Gizmos.color = Color.red;
-        //Gizmos.DrawWireSphere(transform.position, vampireUltRange);
-    }
+    //    Gizmos.color = Color.red;
+    //    Gizmos.DrawWireSphere(transform.position, vampireUltRange);
+    //}
 
     #endregion
 

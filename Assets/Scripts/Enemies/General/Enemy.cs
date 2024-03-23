@@ -14,6 +14,7 @@ public class Enemy : MonoBehaviour
     // Player References
     [HideInInspector] public PlayerController playerController;
     [HideInInspector] public PlayerResources playerResources;
+    [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
 
     // Set up variables
@@ -45,6 +46,7 @@ public class Enemy : MonoBehaviour
         playerController = spawner.playerController;
         playerResources = spawner.playerResources;
         playerTransform = spawner.playerTransform;
+        playerMovement = spawner.playerMovement;
     }
 
     //

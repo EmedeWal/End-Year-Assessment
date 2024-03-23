@@ -10,6 +10,7 @@ public class EnemySpawner : MonoBehaviour
     [Header("Player References")]
     public PlayerController playerController;
     public PlayerResources playerResources;
+    public PlayerMovement playerMovement;
     public Transform playerTransform;
 
     #endregion
@@ -148,13 +149,20 @@ public class EnemySpawner : MonoBehaviour
                 Vector3 directionToPlayer = playerTransform.position - hit.position;
                 if (directionToPlayer.magnitude >= minDistanceFromPlayer)
                 {
-                    return hit.position;
+                    // Check for walls with a BoxCast
+                    Collider[] colliders = Physics.OverlapBox(hit.position, new Vector3(5f, 5f, 5f), Quaternion.identity, LayerMask.GetMask("Terrain"));
+
+                    // If no walls are detected near the spawn position
+                    if (colliders.Length == 0)
+                    {
+                        return hit.position;
+                    }
                 }
             }
         }
+
         return Vector3.zero;  // Return zero if a valid point is not found after trying 30 times
     }
-
     #endregion
 
     //

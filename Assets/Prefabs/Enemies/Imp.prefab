@@ -108,6 +108,7 @@ MonoBehaviour:
   enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
   playerResources: {fileID: 0}
+  playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
   collidesWith:
     serializedVersion: 2
@@ -129,6 +130,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a638dcb5bbee8244db4a7528a90a132e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 3955311645222672704}
+  animator: {fileID: 2260325493172794509}
+  canvasOffset: {x: 0, y: 6, z: 0}
+  maxHealth: 50
+  staggerThreshold: 4
+  currentHealth: 0
+  invincible: 0
+  specialHeal: 2
   stagger:
     m_PersistentCalls:
       m_Calls:
@@ -159,16 +169,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  healthUI: {fileID: 0}
-  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
-  objectCollider: {fileID: 3955311645222672704}
-  animator: {fileID: 2260325493172794509}
-  canvasOffset: {x: 0, y: 6, z: 0}
-  maxHealth: 50
-  staggerThreshold: 4
-  currentHealth: 0
-  invincible: 0
-  specialHeal: 2
 --- !u!114 &8914662334924207182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181,22 +181,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16254c9465c862348869b3c3e22077a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   attackPoint: {fileID: 5316805630645347721}
   animator: {fileID: 2260325493172794509}
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
   player: {fileID: 0}
-  state: 1
   projectilePrefab: {fileID: 4620732746799011094, guid: e424201ff6387d141b565a04d8217b0e, type: 3}
-  attackDuration: 1.5
   attackDamage: 10
+  attackChargeTime: 1
+  attackDuration: 2
   attackRange: 15
+  attackCD: 1
   attackForce: 10
-  attackCD: 3
-  retreatCD: 10
-  safeDistance: 5
+  retreatDistance: 10
+  safeDistance: 10
   rotationSpeed: 2
+  deathDelay: 5
 --- !u!195 &4383133276813536492
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -206,10 +208,10 @@ NavMeshAgent:
   m_GameObject: {fileID: 5080532581376076192}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 1
+  m_Radius: 0.5
   m_Speed: 8
   m_Acceleration: 8
-  avoidancePriority: 50
+  avoidancePriority: 20
   m_AngularSpeed: 200
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1

@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1736056354463442398}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 1.5}
+  m_LocalPosition: {x: 0.25, y: 1, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -237,7 +237,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.3
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -429,7 +429,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.4
+  m_Volume: 0.2
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -705,6 +705,7 @@ GameObject:
   - component: {fileID: 3785289948086015287}
   - component: {fileID: 7329571035110700831}
   - component: {fileID: 6871201602568147199}
+  - component: {fileID: 4446105563356801713}
   - component: {fileID: 968962342823772721}
   m_Layer: 8
   m_Name: Player
@@ -778,7 +779,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 2, z: 1}
+  m_Size: {x: 0.5, y: 2, z: 0.25}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!81 &1869677898472320367
 AudioListener:
@@ -849,7 +850,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7329571035110700831}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
-        m_MethodName: OnSpecial
+        m_MethodName: OnUltimate
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -950,6 +951,7 @@ MonoBehaviour:
   - {fileID: 7593186405825884342}
   - {fileID: 4333833476534402356}
   - {fileID: 1421254542179064651}
+  music: {fileID: 0}
   die:
     m_PersistentCalls:
       m_Calls:
@@ -978,33 +980,42 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 0}
   - {r: 0, g: 1, b: 0.09333682, a: 0}
   - {r: 0, g: 0.7877269, b: 1, a: 0}
-  vampireClip: {fileID: 0}
+  vampireClip: {fileID: 8300000, guid: 7e34e57f4296727459eb521806c3b466, type: 3}
+  vampireAudioOffset: 0
+  vampireAudioVolume: 0.5
   bleedDamage: 1
   bleedTicks: 20
   bleedIntervals: 0.25
-  vampireSpecialGFX: {fileID: 463203988367990435}
-  vampireSpecialTicks: 10
-  vampireSpecialRange: 10
-  orcClip: {fileID: 0}
+  vampireUltGFX: {fileID: 463203988367990435}
+  vampireUltTicks: 10
+  vampireUltRange: 10
+  orcClip: {fileID: 8300000, guid: bea1f1f3a1b134f508156835fb15516a, type: 3}
+  orcAudioOffset: 21
+  orcAudioVolume: 0.3
+  shockwaveCanvas: {fileID: 5024009746357069194, guid: ec3f674830402cc45bce805cf6493db7, type: 3}
   orcDamageMultiplier: 2
-  orcSpecialDuration: 2
+  orcUltDuration: 10
+  shockwaveRange: 4
+  shockwaveModifier: 2
   ghostClip: {fileID: 8300000, guid: 618be86712ffac947997f96463301683, type: 3}
   ghostAudioOffset: 2
+  ghostAudioVolume: 0.1
   ghostDamageMultiplier: 2
-  ghostSpecialDuration: 2
+  ghostUltDuration: 10
+  ghostDashCooldown: 5
   moveSpeed: 10
   rotationSpeed: 0.2
   lightAttackClip: {fileID: 8300000, guid: 13182107f288fdc47a11f9216c8f062b, type: 3}
   heavyAttackClip: {fileID: 8300000, guid: 80151380c0f818243b66a78ef69c9fcd, type: 3}
   lightAttackSoulGain: 5
-  heavyAttackSoulGain: 10
-  stanceSpecialIcons:
+  heavyAttackSoulGain: 8
+  stanceUltIcons:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  specialDurationText: {fileID: 0}
-  specialDurationImage: {fileID: 0}
-  specialActive: 0
+  ultDurationText: {fileID: 0}
+  ultDurationImage: {fileID: 0}
+  ultActive: 0
   cooldownTextDash: {fileID: 0}
   cooldownImageDash: {fileID: 0}
   dashClip: {fileID: 8300000, guid: cc6699269b4c1d44ea1e860518b9bb73, type: 3}
@@ -1026,8 +1037,8 @@ MonoBehaviour:
   die:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 968962342823772721}
-        m_TargetAssemblyTypeName: Death, Assembly-CSharp
+      - m_Target: {fileID: 7329571035110700831}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: Die
         m_Mode: 1
         m_Arguments:
@@ -1081,6 +1092,20 @@ MonoBehaviour:
   maxSouls: 100
   startingSouls: 100
   currentSouls: 0
+--- !u!114 &4446105563356801713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8548571301745153244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab023ce49020e3048aa594d40d798bfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  historicalPositionDuration: 1
+  historicalPositionInterval: 0.1
 --- !u!114 &968962342823772721
 MonoBehaviour:
   m_ObjectHideFlags: 0

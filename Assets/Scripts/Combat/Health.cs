@@ -4,13 +4,9 @@ using UnityEngine.Events;
 
 public class Health : MonoBehaviour
 {
-    public UnityEvent stagger;
-    public UnityEvent death;
+    #region !SETUP!
 
-    #region References
-
-    [Header("Player Only")]
-    [SerializeField] private HealthUI healthUI;
+    #region REFERENCES
 
     [Header("References")]
     [SerializeField] private GameObject canvasPrefab;
@@ -20,20 +16,21 @@ public class Health : MonoBehaviour
     // This variable is used to store the instance of the prefab
     private GameObject canvas;
 
+    // Reference to the script managing the healthUI
+    private HealthUI healthUI;
+
     // Components
     private Rigidbody rb;
     private Enemy enemy;
 
     // Player
-    private PlayerController playerController;
     private PlayerResources playerResources;
-    private Transform playerTransform;
 
     #endregion
 
-    //
+    // End of References
 
-    #region Variables
+    #region VARIABLES
 
     [Header("Variables")]
     [SerializeField] private Vector3 canvasOffset;
@@ -44,14 +41,11 @@ public class Health : MonoBehaviour
 
     [HideInInspector] public float currentHealth;
     [HideInInspector] public bool invincible;
-
-    private bool isEnemy;
-
     #endregion
 
     // End of Variables
 
-    #region Stance Variables and References
+    #region STANCES
 
     #region Vampire Stance
 
@@ -65,46 +59,46 @@ public class Health : MonoBehaviour
 
     #endregion
 
-    //
+    #endregion
 
+    // End of Stances
+
+    #region EVENTS
+
+    public UnityEvent stagger;
+    public UnityEvent death;
+    #endregion
+
+    // End of Events
 
     #endregion
 
-    // End of Stance Variables and References
+    // END OF SETUP
 
-    #region General
+    #region !EXECUTION!
 
-    private void Awake()
-    {
-        if (gameObject.CompareTag("Enemy")) isEnemy = true;
-    }
+    #region DEFAULT
 
     private void Start()
     {
         // Initiliase the health settings
         currentHealth = maxHealth;
 
-        // Set up some references (Enemies only)
-        if (isEnemy)
-        {
-            // Get Components
-            rb = GetComponent<Rigidbody>();
-            enemy = GetComponent<Enemy>();
+        // Get Components
+        rb = GetComponent<Rigidbody>();
+        enemy = GetComponent<Enemy>();
 
-            // Make a temporary gameObject of the spawner reference
-            GameObject spawnerObject = enemy.spawner.gameObject;
+        // Make a temporary gameObject of the spawner reference
+        GameObject spawnerObject = enemy.spawner.gameObject;
 
-            // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
-            canvas = Instantiate(canvasPrefab, spawnerObject.transform);
+        // Spawn the enemy's canvas under the EnemySpawner to avoid complicated rotations
+        canvas = Instantiate(canvasPrefab, spawnerObject.transform);
 
-            // Get the healthUI component on the canvas
-            healthUI = canvas.GetComponent<HealthUI>();
+        // Get the healthUI component on the canvas
+        healthUI = canvas.GetComponent<HealthUI>();
 
-            // Assign Player References
-            playerController = enemy.playerController;
-            playerResources = enemy.playerResources;
-            playerTransform = enemy.playerTransform;
-        }
+        // Assign Player References
+        playerResources = enemy.playerResources;
 
         // Update UI
         healthUI.SetMaxHealth(currentHealth, maxHealth);
@@ -112,14 +106,14 @@ public class Health : MonoBehaviour
 
     private void Update()
     {
-        if (isEnemy) HealthBarPosition();
+        HealthBarPosition();
     }
 
     #endregion
 
-    //
+    // End of Default
 
-    #region Health Bar UI
+    #region UI
 
     private void HealthBarPosition()
     {
@@ -129,14 +123,12 @@ public class Health : MonoBehaviour
 
     #endregion
 
-    //
+    // End of UI
 
-    #region Modifications
+    #region MODIFICATIONS
 
     public void Heal(float amount)
     {
-        Debug.Log(gameObject.name + " healed " + amount + " health.");
-
         // Modify health and handle out of bounds input
         currentHealth += amount;
         if (currentHealth > maxHealth) currentHealth = maxHealth;
@@ -147,28 +139,33 @@ public class Health : MonoBehaviour
 
     public void Damage(float amount)
     {
-        // Check if the player is invulnerable
-        if (invincible) return;
-
-        Debug.Log(gameObject.name + " took " + amount + " damage.");
-
-        // Modify health according to amount and the damage modifier and handle out of bounds input
+        // Modify health according to amount
         currentHealth -= amount;
-        if (currentHealth <= 0) Die();
+
+        // Handle out of bounds input
+        if (currentHealth < 0) currentHealth = 0;
+        if (currentHealth == 0) Die();
 
         // Update UI
         healthUI.SetCurrentHealth(currentHealth);
 
-        // If the amount of damage taken was high enough, stagger the enemy
-        if (amount >= staggerThreshold) stagger?.Invoke();
+        // If the amount of damage taken was high enough, stagger the enemy (no death animations overridden
+        if ((amount >= staggerThreshold) && (currentHealth > 0))
+        {
+            // Invoke the event
+            stagger?.Invoke();
+
+            // Fix UI
+            healthUI.SetStatusIconActive(2, true);
+            CancelInvoke(nameof(DisableStagger));
+            Invoke(nameof(DisableStagger), 1f);
+        }
     }
-
-
     #endregion
 
-    //
+    // End of Modifications
 
-    #region Stances
+    #region STANCES
 
     #region Vampire Stance
 
@@ -241,9 +238,14 @@ public class Health : MonoBehaviour
 
     #endregion
 
-    //
+    // End of Stances
 
-    #region Other
+    #region OTHER
+
+    private void DisableStagger()
+    {
+        healthUI.SetStatusIconActive(2, false);
+    }
 
     private void Die()
     {
@@ -253,11 +255,13 @@ public class Health : MonoBehaviour
         // Destroy all relevant components
         Destroy(objectCollider);
         Destroy(canvas);
-        Destroy(rb);
         Destroy(this);
     }
-
     #endregion
 
-    //
+    // End of Other
+
+    #endregion 
+
+    // END OF EXECUTION
 }

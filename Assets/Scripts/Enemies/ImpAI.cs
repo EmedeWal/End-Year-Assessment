@@ -4,7 +4,24 @@ using UnityEngine.AI;
 
 public class ImpAI : MonoBehaviour
 {
-    #region References
+    #region !SETUP!
+
+    #region ENUM
+
+    public enum EnemyState
+    {
+        Chasing,
+        Charging,
+        Attacking,
+        Retreating
+    }
+
+    public EnemyState currentState = EnemyState.Chasing;
+    #endregion
+
+    // End of Enum
+
+    #region REFERENCES
 
     [Header("References")]
     [SerializeField] private Transform attackPoint;
@@ -15,56 +32,43 @@ public class ImpAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private Enemy enemy;
-
     #endregion
 
-    //
+    // End of References
 
-    #region Enum
-
-    public enum State
-    {
-        Idle,
-        Chase,
-        Attack,
-        Retreat
-    }
-
-    public State state = State.Chase;
-
-    #endregion
-
-    //
-
-    #region Variables
+    #region VARIABLES
 
     [Header("Variables: Attacking")]
     [SerializeField] private GameObject projectilePrefab;
-    [SerializeField] private float attackDuration;
     [SerializeField] private float attackDamage;
+    [SerializeField] private float attackChargeTime;
+    [SerializeField] private float attackDuration;
     [SerializeField] private float attackRange;
-    [SerializeField] private float attackForce;
     [SerializeField] private float attackCD;
+    [SerializeField] private float attackForce;
 
-    private Coroutine attackReset;
     private bool canAttack = true;
-    private bool isAttacking;
 
     [Header("Variables: Retreating")]
-    [SerializeField] private float retreatCD;
+    [SerializeField] private float retreatDistance;
     [SerializeField] private float safeDistance;
-
-    private bool hasRetreated;
+    private Vector3 retreatTargetPosition;
     private bool isRetreating;
 
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private float deathDelay;
+    #endregion
+
+    // End of Attacking
 
     #endregion
 
-    //
+    // END OF SETUP
 
-    #region Default
+    #region !EXECUTION!
+
+    #region DEFAULT
 
     private void Start()
     {
@@ -77,206 +81,261 @@ public class ImpAI : MonoBehaviour
 
     private void Update()
     {
-        // If the enemy is attacking or retreating, return
-        if (isAttacking || isRetreating) return;
-
-        // Set animations
-        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
-
-        // Store the result of the distance check in a variable
-        float distance = DistanceToPlayer();
-
-        // Check if the player is inRange.
-        bool inRange = distance <= attackRange;
-
-        // If the player is very close, the enemy should run away and reposition
-        if (distance <= safeDistance && !hasRetreated) UpdateBehaviour(State.Retreat);
-
-        // If the player is in the attackRange and if the enemy can attack
-        else if (inRange && canAttack) UpdateBehaviour(State.Attack);
-
-        // If the player is in the attackRange, the enemy should idle
-        else if (inRange) UpdateBehaviour(State.Idle);
-
-        // The enemy should move towards the player
-        else UpdateBehaviour(State.Chase);
+        UpdateBehaviour();
     }
 
     #endregion 
 
-    //
+    // End of Default
 
-    #region Behavior
+    #region BEHAVIOUR
 
-    private void UpdateBehaviour(State newState)
+    private void UpdateBehaviour()
     {
-        // Determine which state to swap to
-        state = newState;
-
-        switch (state)
+        switch (currentState)
         {
-            case State.Idle:
-                Idle();
-                break;
-
-            case State.Chase:
+            case EnemyState.Chasing:
                 Chase();
                 break;
 
-            case State.Attack:
+            case EnemyState.Charging:
+                RotateTowardsPlayer();
+                break;
+
+            case EnemyState.Attacking:
                 Attack();
                 break;
 
-            case State.Retreat:
-                Retreat();
+            case EnemyState.Retreating:
+                RetreatToNewPosition();
                 break;
         }
     }
 
-    private float DistanceToPlayer()
+    private bool InRange()
     {
-        // Calculate the distance to the player
-        return Vector3.Distance(player.position, transform.position);
+        // Calculate the distance to the player and check if the player is in the attack range
+        if (Vector3.Distance(player.position, transform.position) <= attackRange) return true;
+        else return false;
     }
 
     #endregion
 
-    //
+    // End of Behavior
 
-    #region States
+    #region STATES
 
-    private void Idle()
-    {
-        // Make sure the enemy is not moving, but rotating towards the player
-        agent.SetDestination(transform.position);
-
-        // Determine the target rotation
-        Quaternion targetRotation = Quaternion.LookRotation(player.position - transform.position);
-
-        // Interpolate the enemy's rotation towards the target rotation
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-    }
+    #region Chasing
 
     private void Chase()
     {
-        // make sure the enemy moves towards the player
+        // If the player is in range, start to attack
+        if (InRange())
+        {
+            currentState = EnemyState.Attacking;
+            return;
+        }
+
+        // The enemy moves towards the player
         agent.SetDestination(player.position);
+        animator.SetFloat("Speed", agent.velocity.magnitude);
     }
+    #endregion
+
+    #region Charging
+    private void RotateTowardsPlayer()
+    {
+        // Rotate towards the player
+        Vector3 direction = (player.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+    }
+    #endregion
 
     #region Attacking
 
     private void Attack()
     {
+        if (!canAttack) return;
+
+        // Enemy rotates towards the player while charging
+        currentState = EnemyState.Charging;
         canAttack = false;
-        isAttacking = true;
 
-        // Make the sure the enemy stands still
-        agent.SetDestination(transform.position);
+        CancelMovement();
 
-        // Play the animation
         animator.SetTrigger("Attack");
 
-        // Reset the attack after the cooldown has passed
-        attackReset = StartCoroutine(AttackReset());
+        // Start charging the attack
+        Invoke(nameof(AttackStart), attackChargeTime);
+    }
 
-        // Calculate when the enemy is done attacking
-        StartCoroutine(AttackTracking());
+    private void AttackStart()
+    {
+        // Lock enemy rotation and position
+        currentState = EnemyState.Attacking;
 
-        StartCoroutine(ShootProjectile());
+        ShootProjectile();
+
+        // Start recovery of the attack, after the attackduration
+        Invoke(nameof(StartRecovery), attackDuration);
     }
 
     private IEnumerator AttackReset()
     {
+        // Wait for the attackCD to attack again
         yield return new WaitForSeconds(attackCD);
+
+        // Booleans
         canAttack = true;
     }
 
-    private IEnumerator AttackTracking()
+    private void StartRecovery()
     {
-        yield return new WaitForSeconds(attackDuration);
-        isAttacking = false;
+        currentState = EnemyState.Retreating;
+        StartCoroutine(AttackReset());
     }
 
-    private IEnumerator ShootProjectile()
+    private void ShootProjectile()
     {
-        yield return new WaitForSeconds(attackDuration / 2);
-
         // Shoot a projectile (enemySpawner is its parent), set its position, set the damage and apply a force
         GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, attackPoint.rotation);
         projectile.GetComponent<ImpProjectile>().SetDamage(attackDamage);
         projectile.GetComponent<Rigidbody>().AddForce(transform.forward * attackForce * 100, ForceMode.Force);
     }
-
     #endregion
 
-    //
-
-    private void Retreat()
+    #region Retreating
+    private void RetreatToNewPosition()
     {
-        hasRetreated = true;
-        isRetreating = true;
+        animator.SetFloat("Speed", agent.velocity.magnitude);
+    
+        // If the enemy is retreating, check if it has reached its destination. If so, cancel the retreat
+        if (isRetreating && (Vector3.Distance(transform.position, retreatTargetPosition) <= 0.1f))
+        {
+            CancelRetreat();
+            return;
+        }
 
-        Vector3 retreatDirection = transform.position - player.position;
-        Vector3 retreatPosition = transform.position + retreatDirection.normalized * Random.Range(safeDistance, safeDistance * 2);
+        // Chose a valid retreat position
+        if (!isRetreating && (Vector3.Distance(transform.position, player.position) <= safeDistance))
+        {
+            isRetreating = true;
+            bool validPositionFound = false;
+            int maxAttempts = 10; 
+            Vector3 potentialRetreatPosition = Vector3.zero;
+            NavMeshHit hit;
 
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(retreatPosition, out hit, safeDistance * 2, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+            for (int i = 0; i < maxAttempts && !validPositionFound; i++)
+            {
+                // Try to find a valid retreat position not close to walls
+                Vector3 retreatDirection = (transform.position - player.position).normalized + Random.insideUnitSphere * 0.3f; // Add randomness to avoid patterns
+                potentialRetreatPosition = transform.position + retreatDirection.normalized * retreatDistance;
 
-        // Cooldown before next possible retreat
-        Invoke(nameof(RetreatReset), retreatCD);
+                if (NavMesh.SamplePosition(potentialRetreatPosition, out hit, retreatDistance, NavMesh.AllAreas))
+                {
+                    // Check for walls with a BoxCast
+                    Collider[] colliders = Physics.OverlapBox(hit.position, new Vector3(1f, 1f, 1f), Quaternion.identity, LayerMask.GetMask("Terrain"));
 
-        StartCoroutine(RetreatTracking());
+                    if (colliders.Length == 0) // No walls detected
+                    {
+                        validPositionFound = true;
+                        retreatTargetPosition = hit.position;
+                        agent.SetDestination(hit.position);
+                    }
+                }
+            }
+
+            if (!validPositionFound)
+            {
+                // No valid positions found. Cancel the retreat action
+                CancelRetreat();
+            }
+        }
+
+        // If the player never entered the range of the enemy and the enemy can attack again, start to chase the player
+        if (!isRetreating && canAttack) currentState = EnemyState.Chasing;
     }
 
-    private void RetreatReset()
+    private void CancelRetreat()
     {
-        hasRetreated = false;
-    }
-
-    private IEnumerator RetreatTracking()
-    {
-        yield return new WaitForSeconds(retreatCD / 3);
-
-        UpdateBehaviour(State.Idle);
-
-        yield return new WaitForSeconds(1f);
-
         isRetreating = false;
+
+        agent.SetDestination(transform.position);
+
+        // The enemy is done retreating and should rotate until the faces the player, before starting the chase
+        currentState = EnemyState.Charging;
+
+        Invoke(nameof(StartChase), 1f);    
+    }
+
+    private void StartChase()
+    {
+        currentState = EnemyState.Chasing;
     }
 
     #endregion
 
-    //
+    #region Other
 
-    #region Events
+    private void CancelMovement()
+    {
+        agent.SetDestination(transform.position);
+        animator.SetFloat("Speed", 0f);
+    }
+    #endregion
+
+    #endregion
+
+    // End of States
+
+    #region EVENTS
 
     public void Stagger()
     {
+        // Reset the enemy's attack CD, but make sure to reset it again later
+        StopAllCoroutines();
+        StartCoroutine(AttackReset());
+        canAttack = false;
+
+        // Animation
         animator.SetTrigger("Stagger");
 
-        // Reset AttackReset()
-        if (attackReset != null && !isAttacking)
+        // If the enemy is interrupted while charing his attack, execute the following the code
+        if (currentState == EnemyState.Charging)
         {
-            canAttack = false;
-            StopCoroutine(attackReset);
-            attackReset = StartCoroutine(AttackReset());
+            // Cancel the attack start
+            CancelInvoke(nameof(AttackStart));
+
+            // Start recovery of the attack, after the attackduration
+            Invoke(nameof(StartRecovery), attackDuration);
+        }
+
+        // If the enemy is hit while moving, stop him in his tracks
+        else if (currentState == EnemyState.Chasing) CancelMovement();
+
+        // If the enemy is retreating
+        else if (currentState == EnemyState.Retreating)
+        {
+            CancelInvoke(nameof(StartChase));
+            CancelRetreat();
         }
     }
 
     public void Death()
     {
         // Play the animation and remove enemy intelligence
-        animator.SetTrigger("Death");
-
-        // MAke sure the enemy stops moving
         agent.SetDestination(transform.position);
-
+        animator.SetTrigger("Death");
         enemy.Die();
-
         Destroy(this);
     }
 
     #endregion
 
-    //
+    //End of Events
+
+    #endregion
+
+    // END OF EXECUTION
 }

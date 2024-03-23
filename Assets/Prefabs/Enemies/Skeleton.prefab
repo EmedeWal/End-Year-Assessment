@@ -1173,6 +1173,7 @@ MonoBehaviour:
   enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
   playerResources: {fileID: 0}
+  playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
   collidesWith:
     serializedVersion: 2
@@ -1194,6 +1195,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a638dcb5bbee8244db4a7528a90a132e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 595508343507091746}
+  animator: {fileID: 3700471490037644492}
+  canvasOffset: {x: 0, y: 4, z: 0}
+  maxHealth: 100
+  staggerThreshold: 30
+  currentHealth: 0
+  invincible: 0
+  specialHeal: 2
   stagger:
     m_PersistentCalls:
       m_Calls:
@@ -1224,16 +1234,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  healthUI: {fileID: 0}
-  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
-  objectCollider: {fileID: 595508343507091746}
-  animator: {fileID: 3700471490037644492}
-  canvasOffset: {x: 0, y: 4, z: 0}
-  maxHealth: 100
-  staggerThreshold: 10
-  currentHealth: 0
-  invincible: 0
-  specialHeal: 2
 --- !u!114 &5028792203554100145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1241,24 +1241,26 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4682828495929238245}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1bf30fdfb731cd48937b6ee4681f187, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   attackPoint: {fileID: 1333079530877925728}
   animator: {fileID: 3700471490037644492}
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
   player: {fileID: 0}
-  state: 0
-  attackSize: {x: 1, y: 2, z: 3}
-  attackDuration: 1.5
+  attackSize: {x: 1, y: 1, z: 2}
   attackDamage: 10
+  attackChargeTime: 0.8
+  attackDuration: 1.2
   attackRange: 4
-  attackCD: 3
+  attackCD: 2
   rotationSpeed: 2
+  rotationModifier: 1
   deathDelay: 1.5
 --- !u!195 &8021781040299788388
 NavMeshAgent:
@@ -1269,7 +1271,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 4682828495929238245}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 3
+  m_Radius: 1.5
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -1911,13 +1913,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8099770395523634414}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 3, z: 4}
+  m_LocalRotation: {x: 0, y: 0.08715578, z: 0, w: 0.9961947}
+  m_LocalPosition: {x: 1.15, y: 3, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2183621556495727823}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 10, z: 0}
 --- !u!1 &8157136257153961199
 GameObject:
   m_ObjectHideFlags: 0

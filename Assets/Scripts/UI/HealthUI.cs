@@ -38,7 +38,6 @@ public class HealthUI : MonoBehaviour
         fill.color = gradient.Evaluate(slider.normalizedValue);
     }
 
-
     public void SetCurrentHealth(float currentHealth)
     {
         slider.value = currentHealth;

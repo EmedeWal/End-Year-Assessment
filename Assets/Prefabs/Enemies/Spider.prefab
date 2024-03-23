@@ -560,6 +560,37 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.0020595824, y: 0.009038532, z: 0.0014633612}
     m_Extent: {x: 0.0003132255, y: 0.00025888998, z: 0.00032027485}
   m_DirtyAABB: 0
+--- !u!1 &1215442923821438893
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5329206681237499535}
+  m_Layer: 9
+  m_Name: Flurry Attack Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5329206681237499535
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215442923821438893}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 1.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8808820856475898363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1235430904203146270
 GameObject:
   m_ObjectHideFlags: 0
@@ -633,7 +664,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8672879705350913583}
   m_Layer: 9
-  m_Name: Attack Point
+  m_Name: Lunge Attack Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -648,7 +679,7 @@ Transform:
   m_GameObject: {fileID: 1560789328419507643}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 2.5}
+  m_LocalPosition: {x: 0, y: 1, z: 3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2449,6 +2480,7 @@ Transform:
   m_Children:
   - {fileID: 1461705795652786346}
   - {fileID: 8672879705350913583}
+  - {fileID: 5329206681237499535}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &8449330279875931354
@@ -2470,7 +2502,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.5, y: 1, z: 3.5}
+  m_Size: {x: 3.5, y: 1, z: 2.5}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &9021338017144268875
 MonoBehaviour:
@@ -2488,6 +2520,7 @@ MonoBehaviour:
   enemyHealth: {fileID: 0}
   playerController: {fileID: 0}
   playerResources: {fileID: 0}
+  playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
   collidesWith:
     serializedVersion: 2
@@ -2509,6 +2542,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a638dcb5bbee8244db4a7528a90a132e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
+  objectCollider: {fileID: 8449330279875931354}
+  animator: {fileID: 7461846953144706116}
+  canvasOffset: {x: 0, y: 4, z: 0}
+  maxHealth: 50
+  staggerThreshold: 20
+  currentHealth: 0
+  invincible: 0
+  specialHeal: 2
   stagger:
     m_PersistentCalls:
       m_Calls:
@@ -2539,16 +2581,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  healthUI: {fileID: 0}
-  canvasPrefab: {fileID: 6712737820129210513, guid: af8ab9599e27648438d846ed91761529, type: 3}
-  objectCollider: {fileID: 8449330279875931354}
-  animator: {fileID: 7461846953144706116}
-  canvasOffset: {x: 0, y: 4, z: 0}
-  maxHealth: 50
-  staggerThreshold: 10
-  currentHealth: 0
-  invincible: 0
-  specialHeal: 2
 --- !u!114 &6108488304059159028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2561,18 +2593,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3f23ada633722844a6a944c29fcf061, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackPoint: {fileID: 8672879705350913583}
+  currentState: 0
   animator: {fileID: 7461846953144706116}
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
   player: {fileID: 0}
-  state: 0
-  attackSize: {x: 1, y: 1, z: 2}
-  attackDuration: 2.5
-  attackDamage: 10
-  attackRange: 4
-  attackCD: 3
+  lungeAttackPoint: {fileID: 8672879705350913583}
+  lungeAttackSize: {x: 1, y: 1, z: 2}
+  lungeAttackDamage: 10
+  lungeAttackChargeTime: 0.75
+  lungeAttackDuration: 1.25
+  lungeAttackCD: 1
+  lungeAttackRange: 4
+  flurryAttackPoint: {fileID: 5329206681237499535}
+  flurryAttackSize: {x: 1, y: 1, z: 1}
+  flurryAttackDamage: 7.5
+  flurryAttackChargeTime: 0.9
+  flurryAttackDuration: 1.6
+  flurryAttackCD: 1
+  flurryAttackRange: 2
+  shouldIntercept: 1
+  MovementPredictionThreshold: 0.1
+  MovementPredictionTime: 2
   rotationSpeed: 3
   deathDelay: 2
 --- !u!195 &19660142240775866
@@ -2584,10 +2627,10 @@ NavMeshAgent:
   m_GameObject: {fileID: 5576891758463423469}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 2.5
-  m_Speed: 8
-  m_Acceleration: 8
-  avoidancePriority: 50
+  m_Radius: 2
+  m_Speed: 15
+  m_Acceleration: 15
+  avoidancePriority: 30
   m_AngularSpeed: 200
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
