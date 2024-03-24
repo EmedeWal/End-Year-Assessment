@@ -110,9 +110,6 @@ MonoBehaviour:
   playerResources: {fileID: 0}
   playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
-  collidesWith:
-    serializedVersion: 2
-    m_Bits: 640
   deathDelay: 2
   isImp: 0
   explosionPrefab: {fileID: 0}
@@ -134,11 +131,10 @@ MonoBehaviour:
   objectCollider: {fileID: 3266406274435570699}
   animator: {fileID: 1971425573201015181}
   canvasOffset: {x: 0, y: 5, z: 0}
-  maxHealth: 300
-  staggerThreshold: 50
+  maxHealth: 150
+  staggerThreshold: 30
   currentHealth: 0
   invincible: 0
-  specialHeal: 2
   stagger:
     m_PersistentCalls:
       m_Calls:
@@ -200,7 +196,7 @@ MonoBehaviour:
   doubleSlashCD: 0.5
   doubleSlashRange: 3
   spinRadius: 3
-  spinDamage: 20
+  spinDamage: 30
   spinChargeTime: 1
   spinDuration: 0.5
   spinCD: 1

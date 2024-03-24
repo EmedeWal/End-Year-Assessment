@@ -50,7 +50,6 @@ public class SkeletonAI : MonoBehaviour
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float rotationModifier;
-    [SerializeField] private float deathDelay;
     #endregion
 
     // End of Attacking
@@ -186,7 +185,7 @@ public class SkeletonAI : MonoBehaviour
 
     private IEnumerator AttackReset()
     {
-        // Wait for the attackCD to attack again
+        // Wait for the spellCD to attack again
         yield return new WaitForSeconds(attackCD);
 
         // Booleans

@@ -75,7 +75,6 @@ public class SpiderAI : MonoBehaviour
 
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
-    [SerializeField] private float deathDelay;
     private bool active = false;
 
     private Vector3 expectedPosition;
@@ -263,7 +262,7 @@ public class SpiderAI : MonoBehaviour
 
     private IEnumerator AttackReset()
     {
-        // Wait for the attackCD to attack again
+        // Wait for the spellCD to attack again
         yield return new WaitForSeconds(attackCD);
 
         // Booleans

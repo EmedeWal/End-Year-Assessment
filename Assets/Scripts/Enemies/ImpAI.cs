@@ -57,7 +57,6 @@ public class ImpAI : MonoBehaviour
 
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
-    [SerializeField] private float deathDelay;
     #endregion
 
     // End of Attacking
@@ -183,7 +182,7 @@ public class ImpAI : MonoBehaviour
 
     private IEnumerator AttackReset()
     {
-        // Wait for the attackCD to attack again
+        // Wait for the spellCD to attack again
         yield return new WaitForSeconds(attackCD);
 
         // Booleans
@@ -200,7 +199,7 @@ public class ImpAI : MonoBehaviour
     {
         // Shoot a projectile (enemySpawner is its parent), set its position, set the damage and apply a force
         GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, attackPoint.rotation);
-        projectile.GetComponent<ImpProjectile>().SetDamage(attackDamage);
+        projectile.GetComponent<ForwardProjectile>().SetDamage(attackDamage);
         projectile.GetComponent<Rigidbody>().AddForce(transform.forward * attackForce * 100, ForceMode.Force);
     }
     #endregion

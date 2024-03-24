@@ -443,7 +443,7 @@ public class PlayerController : MonoBehaviour
         // The player is starting his attack. He can still rotate
         Invoke(nameof(AttackStart), attackChargeTime);
 
-        // Reset canAttack after the duration of attackSpeed
+        // Reset canCast after the duration of attackSpeed
         attackReset = StartCoroutine(AttackReset());
     }
 
@@ -555,7 +555,7 @@ public class PlayerController : MonoBehaviour
     {
         if (attackType == "Light")
         {
-            // Set the right animation, attack size, and attackDuration variables
+            // Set the right animation, attack size, and spellDuration variables
             animator.SetTrigger("Attack - Slash");
             audioSources[0].clip = lightAttackClip;
             attackPoint = lightAttackPoint;
@@ -569,7 +569,7 @@ public class PlayerController : MonoBehaviour
 
         if (attackType == "Heavy")
         {
-            // Set the right animation, attack size, and attackDuration variables
+            // Set the right animation, attack size, and spellDuration variables
             animator.SetTrigger("Attack - Pierce");
             audioSources[0].clip = heavyAttackClip;
             attackPoint = heavyAttackPoint;
@@ -592,8 +592,8 @@ public class PlayerController : MonoBehaviour
         // Get a reference to the audioSource that is used for special sound effects
         AudioSource audioSource = audioSources[1];
 
-        // Check if the player is not attacking, dodging, and if he has maximum souls
-        if (canAttack && !isDashing && resources.currentSouls == 100)
+        // Check if the player has maximum souls
+        if (resources.currentSouls == 100)
         {
             // Then spend all souls
             resources.SpendSouls();
@@ -643,7 +643,7 @@ public class PlayerController : MonoBehaviour
         // Trigger visuals
         StartCoroutine(VampireUltimateGFX());
 
-        // Cast a big ass circle and collect all colliders
+        // ChargeSpell a big ass circle and collect all colliders
         Collider[] hits = Physics.OverlapSphere(transform.position, vampireUltRange);
 
         foreach (Collider hit in hits)

@@ -1175,9 +1175,6 @@ MonoBehaviour:
   playerResources: {fileID: 0}
   playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
-  collidesWith:
-    serializedVersion: 2
-    m_Bits: 640
   deathDelay: 1.5
   isImp: 0
   explosionPrefab: {fileID: 0}
@@ -1200,10 +1197,9 @@ MonoBehaviour:
   animator: {fileID: 3700471490037644492}
   canvasOffset: {x: 0, y: 4, z: 0}
   maxHealth: 100
-  staggerThreshold: 30
+  staggerThreshold: 20
   currentHealth: 0
   invincible: 0
-  specialHeal: 2
   stagger:
     m_PersistentCalls:
       m_Calls:

@@ -31,7 +31,6 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float spawnRadius;
 
     [Header("Modifiers")]
-    [SerializeField] private int waveValueBase;
     [SerializeField] private int waveValueModifier;
     [SerializeField] private float waveDuration;
     [SerializeField] private float waveDurationIncrement;
@@ -71,7 +70,7 @@ public class EnemySpawner : MonoBehaviour
         waveText.text = "Wave: " + currentWave.ToString();
 
         // Generate enemies to spawn
-        waveValue = (currentWave * waveValueModifier) + waveValueBase;
+        waveValue = (currentWave * waveValueModifier);
         GenerateEnemies();
 
         // Calulcate the inverval at which enemies should be spawned

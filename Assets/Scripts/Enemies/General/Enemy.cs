@@ -17,10 +17,6 @@ public class Enemy : MonoBehaviour
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
 
-    // Set up variables
-    [Header("Collision")]
-    [SerializeField] private LayerMask collidesWith;
-
     [Header("Death")]
     [SerializeField] private float deathDelay;
 

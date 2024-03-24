@@ -49,9 +49,6 @@ public class Health : MonoBehaviour
 
     #region Vampire Stance
 
-    [Header("Stance: Vampire")]
-    [SerializeField] private float specialHeal;
-
     private Coroutine currentCoroutine;
     private float bleedIntervals;
     private bool isCursed;

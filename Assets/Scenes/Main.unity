@@ -2931,7 +2931,7 @@ MonoBehaviour:
   playerResources: {fileID: 266890635}
   playerMovement: {fileID: 1592126824}
   playerTransform: {fileID: 266890634}
-  active: 1
+  active: 0
   enemies:
   - enemyPrefab: {fileID: 4682828495929238245, guid: b96fd0b89f7148743af71404495328d6, type: 3}
     cost: 1
@@ -2941,10 +2941,11 @@ MonoBehaviour:
     cost: 3
   - enemyPrefab: {fileID: 4164862064049684296, guid: 7f6f3694684613e45ab9e26fd81d4da4, type: 3}
     cost: 5
+  - enemyPrefab: {fileID: 236678078858085741, guid: 5f8722c7c7008cd479c64a3e61ee46b8, type: 3}
+    cost: 10
   waveText: {fileID: 506317617}
   minDistanceFromPlayer: 70
   spawnRadius: 80
-  waveValueBase: 5
   waveValueModifier: 5
   waveDuration: 10
   waveDurationIncrement: 10
@@ -3714,7 +3715,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -85.35
+      value: -15.06
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3722,7 +3723,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -82.22
+      value: -43.22
       objectReference: {fileID: 0}
     - target: {fileID: 396148104415986476, guid: fc0a0fb552627b244a86a03ccd616c25, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4865,7 +4866,7 @@ Transform:
   m_GameObject: {fileID: 1109052126}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.11, z: 0}
   m_LocalScale: {x: 10, y: 5, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
