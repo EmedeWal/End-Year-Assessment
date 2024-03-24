@@ -32,6 +32,12 @@ public class SpiderAI : MonoBehaviour
     private PlayerMovement playerMovement;
     private NavMeshAgent agent;
     private Enemy enemy;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip lungeClip;
+    [SerializeField] private AudioClip flurryClip;
+
+    private AudioSource audioSource;
     #endregion
 
     // End of References
@@ -104,6 +110,8 @@ public class SpiderAI : MonoBehaviour
 
         // Activate the agent after a short delay
         Invoke("ActivateAgent", 1f);
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -237,9 +245,21 @@ public class SpiderAI : MonoBehaviour
         currentState = EnemyState.Charging;
         canAttack = false;
 
-        // Play the correct animation
-        if (whichAttack == 0) animator.SetTrigger("Attack (Lunge)");
-        else animator.SetTrigger("Attack (Flurry)");
+        // Play the correct animation and audio
+        if (whichAttack == 0)
+        {
+            audioSource.clip = lungeClip;
+            audioSource.Play();
+
+            animator.SetTrigger("Attack (Lunge)");
+        }
+        else
+        {
+            audioSource.clip = flurryClip;
+            audioSource.Play();
+
+            animator.SetTrigger("Attack (Flurry)");
+        }
 
         CancelMovement();
 

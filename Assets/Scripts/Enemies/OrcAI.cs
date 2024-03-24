@@ -28,6 +28,8 @@ public class OrcAI : MonoBehaviour
 
     [HideInInspector] public Transform player;
 
+    private AudioSource audioSource;
+
     private PlayerMovement playerMovement;
     private NavMeshAgent agent;
     private Enemy enemy;
@@ -110,6 +112,8 @@ public class OrcAI : MonoBehaviour
 
         playerMovement = enemy.playerMovement;
         player = enemy.playerTransform;
+
+        audioSource = GetComponent<AudioSource>();
 
         // Determine which attack the enemy should use to know how far it should chase the player
         DetermineAttack();
@@ -299,6 +303,9 @@ public class OrcAI : MonoBehaviour
 
     private void SlashAttack()
     {
+        // Play audio
+        audioSource.Play();
+
         // Retrieve all detected colliders
         Collider[] hits = Physics.OverlapBox(attackPoint.position, attackSize);
 
@@ -321,6 +328,9 @@ public class OrcAI : MonoBehaviour
         // Perform an attack two times
         for (int i = 0; i < 2; i++)
         {
+            // Play audio
+            audioSource.Play();
+
             // Check if something was hit
             Collider[] hits = Physics.OverlapBox(attackPoint.position, attackSize);
 
@@ -344,6 +354,9 @@ public class OrcAI : MonoBehaviour
 
     private void SpinAttack()
     {
+        // Play audio
+        audioSource.Play();
+
         // Retrieve all detected colliders
         Collider[] hits = Physics.OverlapSphere(transform.position + new Vector3(0, 1f, 0), spinRadius, playerLayer);
 

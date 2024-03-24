@@ -29,6 +29,8 @@ public class SkeletonAI : MonoBehaviour
 
     [HideInInspector] public Transform player;
 
+    private AudioSource audioSource;
+
     private NavMeshAgent agent;
     private Enemy enemy;
     #endregion
@@ -69,6 +71,8 @@ public class SkeletonAI : MonoBehaviour
         enemy = GetComponent<Enemy>();
 
         player = enemy.playerTransform;
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -171,6 +175,9 @@ public class SkeletonAI : MonoBehaviour
 
     private void AttackStart()
     {
+        // Play Audio
+        audioSource.Play();
+
         // Lock enemy rotation and position
         currentState = EnemyState.Attacking;
 

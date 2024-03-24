@@ -13,6 +13,10 @@ public class TrackingProjectile : MonoBehaviour
     [SerializeField] private float shockwaveRange;
     [SerializeField] private float explosionDelay;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip explosionClip;
+    private AudioSource audioSource;
+
     [Header("Other")]
     [SerializeField] private GameObject VFX;
     [SerializeField] private float activationTime;
@@ -35,6 +39,8 @@ public class TrackingProjectile : MonoBehaviour
         Physics.IgnoreLayerCollision(enemyLayer, projectileLayer, true);
         // Optionally, ignore collisions between projectiles themselves
         Physics.IgnoreLayerCollision(projectileLayer, projectileLayer, true);
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Start()
@@ -89,8 +95,13 @@ public class TrackingProjectile : MonoBehaviour
 
     private void Explosion()
     {
-        // BOOM 
+        // BOOM. Instantiate prefab and play sound
         Instantiate(explosionPrefab, transform);
+
+        // Play correct audio
+        audioSource.clip = explosionClip;
+        audioSource.volume = audioSource.volume * 2f;
+        audioSource.Play();
 
         // Cast the innor explosion and outer explosions
         Collider[] hits = Physics.OverlapSphere(transform.position, explosionRange, playerLayer);

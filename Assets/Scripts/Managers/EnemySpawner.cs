@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -29,8 +30,11 @@ public class EnemySpawner : MonoBehaviour
     [Header("Spawn Location")]
     [SerializeField] private float minDistanceFromPlayer;
     [SerializeField] private float spawnRadius;
+    private bool canSpawn;
 
     [Header("Modifiers")]
+    [SerializeField] private float performanceDelay;
+    [SerializeField] private int waveValueBase;
     [SerializeField] private int waveValueModifier;
     [SerializeField] private float waveDuration;
     [SerializeField] private float waveDurationIncrement;
@@ -53,11 +57,14 @@ public class EnemySpawner : MonoBehaviour
 
     private void Update()
     {
-        if (active) SpawnEnemies();
+        if (active && canSpawn) SpawnEnemies();
     }
 
     private void GenerateWave()
     {
+        // Make sure enemies do not spawned until they are generated
+        canSpawn = false;
+
         // Reset variables
         enemiesSpawned = 0;
         enemiesDead = 0;
@@ -70,15 +77,11 @@ public class EnemySpawner : MonoBehaviour
         waveText.text = "Wave: " + currentWave.ToString();
 
         // Generate enemies to spawn
-        waveValue = (currentWave * waveValueModifier);
-        GenerateEnemies();
-
-        // Calulcate the inverval at which enemies should be spawned
-        spawnInterval = waveDuration / enemiesToSpawn.Count;
-        waveTimer = waveDuration;
+        waveValue = (currentWave * waveValueModifier) + waveValueBase;
+        StartCoroutine(GenerateEnemies());
     }
 
-    private void GenerateEnemies()
+    private IEnumerator GenerateEnemies()
     {
         // Generate a random selection of enemies
         List<GameObject> generatedEnemies = new List<GameObject>();
@@ -88,24 +91,31 @@ public class EnemySpawner : MonoBehaviour
             int randomEnemyID = Random.Range(0, enemies.Count);
             int randomEnemyCost = enemies[randomEnemyID].cost;
 
-            // If the chosen enemy is further up the list then the wave, it should not be spawned
-            if ((waveValue > randomEnemyCost))
+            // Generate random enemies till wave value is exhausted. Early waves cannot contain strong enemies
+            if ((waveValue >= randomEnemyCost) && (randomEnemyCost <= (currentWave * 2)))
             {
-                // If the enemy can be afforded, at it to the list
+                // Add the chosen enemy to the list
                 generatedEnemies.Add(enemies[randomEnemyID].enemyPrefab);
                 waveValue -= randomEnemyCost;
             }
-            else
+            else if (waveValue <= 0)
             {
-                // Have to break here, so waves might be somewhat inconsistent.
-                // If we do not break here, for some really fucking stupid reason Unity crashes
+                // No more enemies can be afforded
                 break;
             }
+
+            // Make sure Unity does not instantly explode
+            yield return new WaitForSeconds(performanceDelay);
         }
 
         // Make sure the list is empty. Then, assign the chosen enemies to the list
         enemiesToSpawn.Clear();
         enemiesToSpawn = generatedEnemies;
+
+        // Calulcate the inverval at which enemies should be spawned and start spawning
+        spawnInterval = waveDuration / enemiesToSpawn.Count;
+        waveTimer = waveDuration;
+        canSpawn = true;
     }
 
     private void SpawnEnemies()
@@ -119,17 +129,16 @@ public class EnemySpawner : MonoBehaviour
                 Vector3 spawnPoint = GetValidSpawnPoint();
                 if (spawnPoint != Vector3.zero)
                 {
-                    GameObject enemy = Instantiate(enemiesToSpawn[0], spawnPoint, Quaternion.identity, transform);
+                    Instantiate(enemiesToSpawn[0], spawnPoint, Quaternion.identity, transform);
                     enemiesToSpawn.RemoveAt(0);
                     spawnTimer = spawnInterval;
                     enemiesSpawned++;
                 }
             }
             // If  the player has killed all enemies, generate the new wave
-            else if ((waveTimer  <= 0) && (enemiesSpawned == enemiesDead)) GenerateWave();
+            else if (enemiesSpawned == enemiesDead) GenerateWave();
         }
-
-        // Else, decrease the timers
+        // If no enemy can be spawned yet, decrease the timers
         else
         {
             spawnTimer -= Time.deltaTime;

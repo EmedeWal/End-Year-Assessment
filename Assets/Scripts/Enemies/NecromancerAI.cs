@@ -24,7 +24,9 @@ public class NecromancerAI : MonoBehaviour
 
     #region REFERENCES
 
-    [Header("References")]
+    [Header("REFERENCES")]
+
+    [Header("General")]
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Transform spellPoint;
     [SerializeField] private Animator animator;
@@ -34,6 +36,11 @@ public class NecromancerAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private Enemy enemy;
+
+    [Header("General")]
+    [SerializeField] private AudioClip chargeSpell;
+    [SerializeField] private AudioClip meleeClip;
+    private AudioSource audioSource;
     #endregion
 
     // End of References
@@ -107,6 +114,8 @@ public class NecromancerAI : MonoBehaviour
         enemy = GetComponent<Enemy>();
 
         player = enemy.playerTransform;
+
+        audioSource = GetComponent<AudioSource>();
 
         DetermineSpell();
     }
@@ -225,6 +234,11 @@ public class NecromancerAI : MonoBehaviour
     {
         CastMelee();
 
+        // Play audio
+        audioSource.clip = meleeClip;
+        audioSource.volume = 0.2f;
+        audioSource.Play();
+
         // Tracking is disabled
         currentState = EnemyState.Attacking;    
 
@@ -276,6 +290,12 @@ public class NecromancerAI : MonoBehaviour
 
         animator.SetTrigger("Attack (Ranged)");
 
+        // Play an audio cue to notify the player 
+        audioSource.clip = chargeSpell;
+        audioSource.volume = 0.05f;
+        audioSource.time = 0.3f;
+        audioSource.Play();
+
         // The enemy should rotate towards the player until the projectile is launched
         currentState = EnemyState.Charging;
 
@@ -305,6 +325,9 @@ public class NecromancerAI : MonoBehaviour
     {
         // The enemy can cast spells again after the cooldown
         Invoke(nameof(SpellReset), spellCD);
+
+        // The spell was done charging, stop the audio
+        audioSource.Stop();
 
         // Additional behavior
         currentState = EnemyState.Chasing;
