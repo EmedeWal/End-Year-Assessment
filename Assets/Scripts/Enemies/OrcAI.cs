@@ -471,7 +471,7 @@ public class OrcAI : MonoBehaviour
     //private void OnDrawGizmosSelected()
     //{
     //    Gizmos.color = Color.blue;
-    //    Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
+    //    Gizmos.matrix = Matrix4x4.TRS(meleePoint.position, meleePoint.rotation, Vector3.one);
     //    Gizmos.DrawWireCube(Vector3.zero, attackSize);
 
     //    //Gizmos.color = Color.red;

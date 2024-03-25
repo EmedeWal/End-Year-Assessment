@@ -57,10 +57,10 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 116
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!135 &884577442613851490
 SphereCollider:
@@ -95,8 +95,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb35bceca9b93844cabedf1811ee5968, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explosionPrefab: {fileID: 100000, guid: 15ca5b8fa431dc04291a79cadcd19874, type: 3}
+  explosionDamage: 25
+  explosionRadius: 5
   particleDelay: 0.5
   rb: {fileID: 0}
+  shouldExplode: 0
 --- !u!1001 &452007811535606320
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -239,6 +239,12 @@ public class Health : MonoBehaviour
 
     #region OTHER
 
+    public void CanvasState()
+    {
+        if (canvas.activeSelf) canvas.SetActive(false);
+        else canvas.SetActive(true);
+    }
+
     private void DisableStagger()
     {
         healthUI.SetStatusIconActive(2, false);

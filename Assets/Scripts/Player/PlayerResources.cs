@@ -135,14 +135,14 @@ public class PlayerResources : MonoBehaviour
         //  Make sure no weird shenanigans happens with negative numbers
         if (amount < 0) amount = 0;
 
-        Debug.Log("Player took " + amount + " damage.");
-
         // If active, interrupt passive healing
         if (healingCoroutine != null) StopCoroutine(healingCoroutine);
 
         // Modify health according to amount and the damage modifier and handle out of bounds input
         currentHealth -= amount;
         if (currentHealth <= 0) Die();
+
+        Debug.Log("Player took " + amount + " damage. Currenthealth: " + currentHealth);
 
         // Update UI
         healthUI.SetCurrentHealth(currentHealth);

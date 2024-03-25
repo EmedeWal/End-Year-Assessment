@@ -443,7 +443,7 @@ public class PlayerController : MonoBehaviour
         // The player is starting his attack. He can still rotate
         Invoke(nameof(AttackStart), attackChargeTime);
 
-        // Reset canCast after the duration of attackSpeed
+        // Reset canFire after the duration of attackSpeed
         attackReset = StartCoroutine(AttackReset());
     }
 
@@ -714,7 +714,7 @@ public class PlayerController : MonoBehaviour
         int layerMask = 1 << enemyLayer;
 
         // Retrieve the VFX origin and instantiate the VFX
-        Transform origin = target.transform.Find("VFX Origin");
+        Vector3 origin = new Vector3(target.transform.position.x, attackPoint.position.y, target.transform.position.z);
         StartCoroutine(OrcUltimateGFX(origin));
 
         // Store all enemies hit by the shockwave in a collider array
@@ -733,10 +733,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private IEnumerator OrcUltimateGFX(Transform origin)
+    private IEnumerator OrcUltimateGFX(Vector3 origin)
     {
         // Instantiate the VFX at the target location
-        GameObject VFX = Instantiate(shockwaveCanvas, origin);
+        GameObject VFX = Instantiate(shockwaveCanvas, origin, Quaternion.identity);
 
         // Wait a tiny while before dissappearing
         yield return new WaitForSeconds(1f);
@@ -968,10 +968,10 @@ public class PlayerController : MonoBehaviour
 
     //private void OnDrawGizmosSelected()
     //{
-    //    if (attackPoint != null)
+    //    if (meleePoint != null)
     //    {
     //        Gizmos.color = Color.red;
-    //        Gizmos.matrix = Matrix4x4.TRS(attackPoint.position, attackPoint.rotation, Vector3.one);
+    //        Gizmos.matrix = Matrix4x4.TRS(meleePoint.position, meleePoint.rotation, Vector3.one);
     //        Gizmos.DrawWireCube(Vector3.zero, attackSize);
 
     //    }

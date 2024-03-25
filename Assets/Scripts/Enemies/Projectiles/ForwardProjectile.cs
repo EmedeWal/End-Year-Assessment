@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class ForwardProjectile : MonoBehaviour
 {
+    [SerializeField] private GameObject explosionPrefab;
+    [SerializeField] private float explosionDamage;
+    [SerializeField] private float explosionRadius;
     [SerializeField] private float particleDelay;
 
     [HideInInspector] public Rigidbody rb;
+    [HideInInspector] public bool shouldExplode = false;
 
     private float damage;
     private bool active = true;
@@ -42,6 +46,21 @@ public class ForwardProjectile : MonoBehaviour
 
         // Destroy the object after a delay
         Invoke(nameof(DestroyInstance), particleDelay);
+
+        // Cast the explosion immediately upon valid collision
+        if (shouldExplode)
+        {
+            Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+            GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            explosion.transform.position = transform.position + new Vector3(0, 1, 0);
+
+            // Damage the player caught in the blast
+            foreach (Collider hit in hits)
+            {
+                PlayerResources pHealth = hit.GetComponent<PlayerResources>();
+                if (pHealth != null) pHealth.Damage(explosionDamage);
+            }
+        }
     }
 
     public void SetDamage(float newDamage)
