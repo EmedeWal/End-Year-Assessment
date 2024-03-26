@@ -1178,8 +1178,8 @@ MonoBehaviour:
   deathDelay: 1.5
   isImp: 0
   explosionPrefab: {fileID: 0}
-  explosionDamage: 0
-  explosionRadius: 0
+  enemyPrefab: {fileID: 4682828495929238245}
+  cost: 1
 --- !u!114 &9121345064740217676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1254,7 +1254,7 @@ MonoBehaviour:
   attackChargeTime: 0.8
   attackDuration: 1.2
   attackRange: 4
-  attackCD: 2
+  attackCD: 3.2
   rotationSpeed: 2
   rotationModifier: 1
 --- !u!195 &8021781040299788388

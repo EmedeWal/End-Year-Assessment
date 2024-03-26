@@ -62,6 +62,7 @@ public class OrcAI : MonoBehaviour
     [SerializeField] private float spinDuration;
     [SerializeField] private float spinCD;
     [SerializeField] private float spinRange;
+    //[SerializeField] private float spinDistance;
 
     [Header("Variables: Attacking")]
     [SerializeField] private Transform attackPoint;
@@ -76,10 +77,10 @@ public class OrcAI : MonoBehaviour
     private bool canAttack = true;
 
     [Header("Variables: Movement")]
-    [SerializeField] private bool shouldIntercept;
-    [SerializeField][Range(-1, 1)] public float MovementPredictionThreshold = 0;
-    [SerializeField][Range(0.25f, 2f)] public float MovementPredictionTime = 1f;
+    [SerializeField][Range(-1, 1)] public float MovementPredictionThreshold = 1;
+    [SerializeField][Range(0.25f, 2f)] public float MovementPredictionTime = 2f;
     private Coroutine chaseCoroutine;
+    private bool shouldIntercept;
 
     [Header("Variables: Other")]
     [SerializeField] private float rotationSpeed;
@@ -281,6 +282,9 @@ public class OrcAI : MonoBehaviour
 
         // Start recovery of the attack, after the attackduration
         Invoke(nameof(StartRecovery), attackDuration);
+
+        // Reset attack CD
+        StartCoroutine(AttackReset());
     }
 
     private IEnumerator AttackReset()
@@ -297,8 +301,6 @@ public class OrcAI : MonoBehaviour
         currentState = EnemyState.Chasing;
 
         DetermineAttack();
-
-        StartCoroutine(AttackReset());
     }
 
     private void SlashAttack()
@@ -425,7 +427,7 @@ public class OrcAI : MonoBehaviour
 
     // End of Other
 
-    #region Events
+    #region EVENTS
 
     public void Stagger()
     {
@@ -434,7 +436,6 @@ public class OrcAI : MonoBehaviour
         StartCoroutine(AttackReset());
         canAttack = false;
 
-        // Play idle animation
         animator.SetTrigger("Stagger");
 
         // If the enemy is interrupted while charing his attack, execute the following the code
@@ -467,37 +468,4 @@ public class OrcAI : MonoBehaviour
     #endregion
 
     // END OF EXECUTION
-
-    //private void OnDrawGizmosSelected()
-    //{
-    //    Gizmos.color = Color.blue;
-    //    Gizmos.matrix = Matrix4x4.TRS(meleePoint.position, meleePoint.rotation, Vector3.one);
-    //    Gizmos.DrawWireCube(Vector3.zero, attackSize);
-
-    //    //Gizmos.color = Color.red;
-    //    //Gizmos.DrawWireSphere(transform.position, spinRadius);
-    //}
-    //void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(transform.position, spinRadius);
-    //}
-
-    //void OnDrawGizmos()
-    //{
-    //    if (agent != null && agent.isActiveAndEnabled)
-    //    {
-    //        // Draw a line from the enemy to the predicted player position
-    //        Gizmos.color = Color.yellow;
-    //        Gizmos.DrawLine(transform.position, expectedPosition);
-
-    //        // Draw a sphere at the predicted player position
-    //        Gizmos.color = Color.red;
-    //        Gizmos.DrawSphere(expectedPosition, 0.5f);
-
-    //        // Optionally, draw a line from the enemy to its current destination
-    //        Gizmos.color = Color.green;
-    //        Gizmos.DrawLine(transform.position, agent.destination);
-    //    }
-    //}
 }

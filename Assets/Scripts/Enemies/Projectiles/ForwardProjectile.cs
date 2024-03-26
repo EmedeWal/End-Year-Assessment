@@ -50,16 +50,7 @@ public class ForwardProjectile : MonoBehaviour
         // Cast the explosion immediately upon valid collision
         if (shouldExplode)
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
             GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-            explosion.transform.position = transform.position + new Vector3(0, 1, 0);
-
-            // Damage the player caught in the blast
-            foreach (Collider hit in hits)
-            {
-                PlayerResources pHealth = hit.GetComponent<PlayerResources>();
-                if (pHealth != null) pHealth.Damage(explosionDamage);
-            }
         }
     }
 

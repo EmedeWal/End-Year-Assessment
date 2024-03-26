@@ -22,7 +22,7 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Setup")]
     [SerializeField] private bool active;
-    [SerializeField] private List<EnemyToSpawn> enemies = new List<EnemyToSpawn>();
+    [SerializeField] private List<Enemy> enemies = new List<Enemy>();
 
     [Header("References")]
     [SerializeField] private TextMeshProUGUI waveText;

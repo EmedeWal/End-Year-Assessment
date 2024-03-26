@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
@@ -23,8 +24,11 @@ public class Enemy : MonoBehaviour
     [Header("Imp Specific")]
     [SerializeField] private bool isImp;
     [SerializeField] private GameObject explosionPrefab;
-    [SerializeField] private float explosionDamage;
-    [SerializeField] private float explosionRadius;
+
+    // For spawning and granting gold
+    [Header("Spawning")]
+    public GameObject enemyPrefab;
+    public int cost;
 
     #endregion
 
@@ -58,30 +62,19 @@ public class Enemy : MonoBehaviour
     {
         yield return new WaitForSeconds(deathDelay);
 
-        // Check if is an imp. If so, cast an explosion
+        // Check if is an imp
         if (isImp)
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+            // If so, spawn the explosion prefab. This explosion damages enemies
             GameObject explosion = Instantiate(explosionPrefab, spawner.transform);
-            explosion.transform.position = transform.position + new Vector3(0, 1, 0);
-            
-            // Damage all enemies caught in the blast
-            foreach (Collider hit  in hits)
-            {
-                Health eHealth = hit.GetComponent<Health>();
-                if (eHealth != null) eHealth.Damage(explosionDamage);
-            }
-
-            // Damage the player caught in the blast
-            foreach (Collider hit in hits)
-            {
-                PlayerResources pHealth = hit.GetComponent<PlayerResources>();
-                if (pHealth != null) pHealth.Damage(explosionDamage);
-            }
+            explosion.GetComponent<Explosion>().damagesEnemies = true;
         }
 
         // Increment the enemiesDead counter
         spawner.enemiesDead++;
+
+        // Grant the player gold
+        playerResources.GainGold(cost);
 
         Destroy(gameObject);
     }
@@ -89,11 +82,5 @@ public class Enemy : MonoBehaviour
     #endregion
 
     //
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, explosionRadius);
-    }
 }
 

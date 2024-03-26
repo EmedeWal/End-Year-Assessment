@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -25,10 +26,16 @@ public class PlayerResources : MonoBehaviour
     #endregion
 
     #region Souls
+
     [Header("Soul References")]
     [SerializeField] private Gradient gradient;
     [SerializeField] private Slider slider;
     [SerializeField] private Image fill;
+    #endregion
+
+    #region Gold
+    [Header("Gold References")]
+    [SerializeField] private TextMeshProUGUI goldAmountText;
 
     private PlayerController player;
     #endregion
@@ -64,6 +71,11 @@ public class PlayerResources : MonoBehaviour
     [HideInInspector] public int currentSouls;
     #endregion
 
+    #region Gold
+
+    [HideInInspector] public float goldAmount = 0;
+    #endregion
+
     #endregion
 
     // End of Variables
@@ -87,6 +99,9 @@ public class PlayerResources : MonoBehaviour
         // Initiliase the health settings and update UI
         currentHealth = startingHealth;
         healthUI.SetMaxHealth(currentHealth, maxHealth);
+
+        // Set the amount of gold accurate
+        UpdateGoldUI();
 
         // Initiliase the soul settings
         currentSouls = startingSouls;
@@ -175,6 +190,26 @@ public class PlayerResources : MonoBehaviour
     }
     #endregion
 
+    #region Gold
+
+    public void GainGold(int amount)
+    {
+        // Modify the cost of the enemy that has died by 10, for statisfaction purposes
+        goldAmount += amount * 10;
+
+        UpdateGoldUI();
+    }
+
+    public void SpendGold(int amount)
+    {
+        // Modify the cost of the enemy that has died by 10, for statisfaction purposes
+        goldAmount -= amount * 10;
+
+        UpdateGoldUI();
+    }
+
+    #endregion
+
     #endregion
 
     // End of Modifications
@@ -193,12 +228,9 @@ public class PlayerResources : MonoBehaviour
         }
     }
 
-    public int GetCharges()
+    private void UpdateGoldUI()
     {
-        // Get the increments of 20 from your souls and return it
-        int charges = currentSouls / 20;
-
-        return charges;
+        goldAmountText.text = goldAmount.ToString();
     }
 
     private void Die()

@@ -111,11 +111,11 @@ MonoBehaviour:
   playerResources: {fileID: 0}
   playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
-  deathDelay: 4
+  deathDelay: 5
   isImp: 0
   explosionPrefab: {fileID: 0}
-  explosionDamage: 0
-  explosionRadius: 0
+  enemyPrefab: {fileID: 4164862064049684296}
+  cost: 5
 --- !u!114 &3632686496545328563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,8 +203,7 @@ MonoBehaviour:
   spinCD: 1
   spinRange: 3
   attackPoint: {fileID: 7162009370998953068}
-  shouldIntercept: 1
-  MovementPredictionThreshold: 0.1
+  MovementPredictionThreshold: 1
   MovementPredictionTime: 2
   rotationSpeed: 2
 --- !u!195 &4923558275605835718
@@ -217,8 +216,8 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 8
-  m_Acceleration: 8
+  m_Speed: 10
+  m_Acceleration: 10
   avoidancePriority: 10
   m_AngularSpeed: 200
   m_StoppingDistance: 0

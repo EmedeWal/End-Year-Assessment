@@ -146,8 +146,8 @@ MonoBehaviour:
   deathDelay: 3
   isImp: 0
   explosionPrefab: {fileID: 0}
-  explosionDamage: 0
-  explosionRadius: 0
+  enemyPrefab: {fileID: 4408652331263071003}
+  cost: 50
 --- !u!114 &7104295504198881248
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,7 +210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3e10410b01ee934fbb54ee29280b95a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 4
+  currentState: 0
   GFX: {fileID: 810875775873046695}
   dragonCollider: {fileID: 7337518527602059091}
   animator: {fileID: 810875775873046694}
@@ -223,7 +223,7 @@ MonoBehaviour:
   tail: {fileID: 8300000, guid: 201a50cf97fd21a499e2f1b0a095dd13, type: 3}
   bitePoint: {fileID: 927380656797016481}
   biteSize: {x: 1, y: 1, z: 1}
-  biteDamage: 10
+  biteDamage: 20
   biteChargeTime: 0.5
   biteDuration: 0.8
   biteRange: 5
@@ -242,9 +242,9 @@ MonoBehaviour:
   fireChargeTime: 0.5
   fireDuration: 0.5
   fireRange: 20
-  fireCD: 2
+  fireCD: 10
   fireForce: 10
-  maxRotation: 45
+  maxRotation: 60
   canvasState:
     m_PersistentCalls:
       m_Calls:
@@ -260,11 +260,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  maxStateTime: 10
+  maxStateTime: 30
   ascendDistance: 7.5
-  ascendIncrement: 0.05
+  ascendIncrement: 0.1
   rangeBoost: 5
+  cooldownBoost: 8
   minRepositionDistance: 10
+  MovementPredictionTime: 2
   rotationSpeed: 2.5
   activationTime: 2.5
 --- !u!195 &7127998849085615197

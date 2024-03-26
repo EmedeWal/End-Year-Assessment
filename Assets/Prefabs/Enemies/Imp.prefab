@@ -113,8 +113,8 @@ MonoBehaviour:
   deathDelay: 3
   isImp: 1
   explosionPrefab: {fileID: 100000, guid: 15ca5b8fa431dc04291a79cadcd19874, type: 3}
-  explosionDamage: 25
-  explosionRadius: 5
+  enemyPrefab: {fileID: 5080532581376076192}
+  cost: 3
 --- !u!114 &8271682602553298944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,12 +189,11 @@ MonoBehaviour:
   attackChargeTime: 1
   attackDuration: 2
   attackRange: 15
-  attackCD: 1
+  attackCD: 3
   attackForce: 10
   retreatDistance: 10
   safeDistance: 10
   rotationSpeed: 2
-  deathDelay: 5
 --- !u!195 &4383133276813536492
 NavMeshAgent:
   m_ObjectHideFlags: 0

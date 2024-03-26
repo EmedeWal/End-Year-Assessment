@@ -207,6 +207,7 @@ public class SpiderAI : MonoBehaviour
                 Vector3 directionToTarget = (targetPosition - transform.position).normalized;
                 Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
 
+                // Check if the player is close enough for a direct approach
                 float dot = Vector3.Dot(directionToPlayer, directionToTarget);
 
                 if (dot < MovementPredictionThreshold)
@@ -278,6 +279,9 @@ public class SpiderAI : MonoBehaviour
 
         // Start recovery of the attack, after the attackduration
         Invoke(nameof(StartRecovery), attackDuration);
+
+        // Reset attack CD
+        StartCoroutine(AttackReset());
     }
 
     private IEnumerator AttackReset()
@@ -294,8 +298,6 @@ public class SpiderAI : MonoBehaviour
         currentState = EnemyState.Chasing;
 
         DetermineAttack();
-
-        StartCoroutine(AttackReset());
     }
 
     private void LungeAttack()

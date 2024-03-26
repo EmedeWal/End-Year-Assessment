@@ -36,6 +36,7 @@ public class DragonAI : MonoBehaviour
 
     [HideInInspector] public Transform player;
 
+    private PlayerMovement playerMovement;
     private NavMeshAgent agent;
     private Enemy enemy;
 
@@ -98,12 +99,13 @@ public class DragonAI : MonoBehaviour
     [Header("FLYING")]
     public UnityEvent canvasState;
 
-    [SerializeField] private int maxStateTime;
+    [SerializeField] private float maxStateTime;
     [SerializeField] private float ascendDistance;
     [SerializeField] private float ascendIncrement;
     [SerializeField] private float rangeBoost;
-    private int stateTime = 0;
+    [SerializeField] private float cooldownBoost;
     private float originalPositionY;
+    private bool shouldSwap = false;
     private bool isFlying = false;
     private bool isAscendingOrDescending = false;
 
@@ -111,6 +113,11 @@ public class DragonAI : MonoBehaviour
     [SerializeField] private float minRepositionDistance;
     private Vector3 reposition;
     private bool isMoving = false;
+
+    [Header("MOVEMENT PREDICTION")]
+    [SerializeField][Range(0.25f, 2f)] private float MovementPredictionTime = 2f;
+    private Coroutine predictionCoroutine;
+    private Vector3 expectedPosition;
 
     [Header("Other")]
     [SerializeField] private float rotationSpeed;
@@ -132,6 +139,8 @@ public class DragonAI : MonoBehaviour
     {
         // Determine which melee to cast
         DetermineMelee();
+
+        Invoke(nameof(ShouldSwapState), maxStateTime);
     }
 
     private void Start()
@@ -140,6 +149,7 @@ public class DragonAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         enemy = GetComponent<Enemy>();
 
+        playerMovement = enemy.playerMovement;
         player = enemy.playerTransform;
 
         audioSource = GetComponent<AudioSource>();
@@ -215,16 +225,13 @@ public class DragonAI : MonoBehaviour
 
     private void Chase()
     {
-        // Check if the enemy is grounded
-        if (!isFlying)
+        // Check if the enemy should swap states
+        if (shouldSwap)
         {
-            //If so, increment TrackStateTime
-            if (TrackStateTime())
-            {
-                CancelMovement();
-                currentState = EnemyState.Flying;
-                return;
-            }
+            shouldSwap = false;
+            CancelMovement();
+            currentState = EnemyState.Flying;
+            return;
         }
 
         // If the player is in melee range and the dragon is not flying, attack in melee. 
@@ -236,7 +243,7 @@ public class DragonAI : MonoBehaviour
         }
 
         // If the player is in the fire range, fire at him
-        if (InFireRange())
+        if (InFireRange() && canFire)
         {
             CancelMovement();
             currentState = EnemyState.Firing;
@@ -252,8 +259,12 @@ public class DragonAI : MonoBehaviour
     #region Charging
     private void RotateTowardsPlayer()
     {
-        // Rotate towards the player
-        Vector3 direction = (player.position - transform.position).normalized;
+        Vector3 direction;
+
+        // Rotate towards the player. If flying, rotate towards the expected player position
+        if (isFlying) direction = (expectedPosition - transform.position).normalized;
+        else direction = (player.position - transform.position).normalized;
+
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
     }
@@ -431,7 +442,7 @@ public class DragonAI : MonoBehaviour
         if (isFlying)
         {
             // Calculate the direction to the player
-            Vector3 directionToPlayer = (player.position - firePoint.position).normalized;
+            Vector3 directionToPlayer = (expectedPosition - firePoint.position).normalized;
 
             // Create a look rotation in the direction of the player
             Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
@@ -454,6 +465,27 @@ public class DragonAI : MonoBehaviour
         projectile.GetComponent<Rigidbody>().AddForce(projectile.transform.forward * fireForce * 100, ForceMode.Force);
     }
 
+    private IEnumerator PredictPlayerMovement()
+    {
+        WaitForSeconds repathingDelay = new WaitForSeconds(0.15f);
+
+        float timeToPlayer = Vector3.Distance(player.position, transform.position) / agent.speed;
+
+        while (true)
+        {
+            if (timeToPlayer > MovementPredictionTime)
+            {
+                timeToPlayer = MovementPredictionTime;
+            }
+
+            // Calculate where the player will be based on his position and velocity
+            Vector3 targetPosition = player.position + playerMovement.AverageVelocity * timeToPlayer;
+
+            expectedPosition = targetPosition;
+
+            yield return repathingDelay;
+        }
+    }
     #endregion
 
     #region Flying
@@ -481,22 +513,25 @@ public class DragonAI : MonoBehaviour
     {
         isFlying = true;
         animator.SetBool("Is Flying", isFlying);
+        animator.SetTrigger("Ascend");
+
+        // The enemy is flying and should predict player movement with his fireballs
+        predictionCoroutine = StartCoroutine(PredictPlayerMovement());
 
         // Save the original position of the GFX
         originalPositionY = GFX.transform.position.y;
 
-        animator.SetTrigger("Ascend");
-
-        // The dragon can fire further now that he is high up in the air
+        // The dragon can fire further and faster now that he is high up in the air
         fireRange += rangeBoost;
+        fireCD -= cooldownBoost;
 
         ManageAvialState();
 
         while (GFX.transform.position.y <= ascendDistance)
         {
-            GFX.transform.position += new Vector3(0, ascendIncrement * 2, 0);
+            GFX.transform.position += new Vector3(0, ascendIncrement, 0);
 
-            yield return new WaitForSeconds(ascendIncrement);
+            yield return new WaitForSeconds(ascendIncrement / 2);
         }
 
         // At the end of flying, go back to regular behavior
@@ -514,13 +549,14 @@ public class DragonAI : MonoBehaviour
 
         // The dragon can fire further now that he is high up in the air
         fireRange -= rangeBoost;
+        fireCD += cooldownBoost;
 
         // While the GFX are not back at their original position
         while (originalPositionY <= GFX.transform.position.y)
         {
             GFX.transform.position -= new Vector3(0, ascendIncrement * 2, 0);
 
-            yield return new WaitForSeconds(ascendIncrement);
+            yield return new WaitForSeconds(ascendIncrement / 2);
         }
 
         ManageAvialState();
@@ -529,6 +565,9 @@ public class DragonAI : MonoBehaviour
         isFlying = false;
         isAscendingOrDescending = false;
         animator.SetBool("Is Flying", isFlying);
+
+        // Revert movement prediction
+        if (predictionCoroutine != null) StopCoroutine(PredictPlayerMovement());
 
         // At the end of flying, go back to regular behavior
         currentState = EnemyState.Charging;
@@ -562,7 +601,7 @@ public class DragonAI : MonoBehaviour
 
         isMoving = true;
         bool validPositionFound = false;
-        int maxAttempts = 10;
+        int maxAttempts = 50;
 
 
         for (int i = 0; i < maxAttempts && !validPositionFound; i++)
@@ -604,13 +643,10 @@ public class DragonAI : MonoBehaviour
 
         agent.SetDestination(transform.position);
 
-        if (TrackStateTime()) currentState = EnemyState.Flying;
-        else
-        {
-            // The enemy is done retreating and should rotate until the faces the player, before starting the chase
-            currentState = EnemyState.Charging;
-            Invoke(nameof(StartChase), 1f);
-        }
+        // The enemy is done retreating and should rotate until the faces the player, before starting the chase
+        currentState = EnemyState.Charging;
+        Invoke(nameof(StartChase), 1f);
+
     }
 
     private void StartChase()
@@ -621,13 +657,15 @@ public class DragonAI : MonoBehaviour
 
     #region Other
 
-    private bool TrackStateTime()
+    private void StateSwapTimer()
     {
-        stateTime++;
+        ShouldSwapState();
+    }
 
-        // If the enemy has exceeded its time in the air or the ground, swap state
-        if (stateTime >= maxStateTime) return true;
-        else return false;
+    private void ShouldSwapState()
+    {
+        shouldSwap = true;
+        Invoke(nameof(ShouldSwapState), maxStateTime);
     }
 
     private void Activate()
@@ -685,7 +723,7 @@ public class DragonAI : MonoBehaviour
 
     //End of Events
 
-    #endregion
+#endregion
 
     // END OF EXECUTION
 

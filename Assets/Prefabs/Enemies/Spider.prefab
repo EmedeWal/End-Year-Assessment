@@ -2523,11 +2523,11 @@ MonoBehaviour:
   playerResources: {fileID: 0}
   playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
-  deathDelay: 2
+  deathDelay: 3
   isImp: 0
   explosionPrefab: {fileID: 0}
-  explosionDamage: 0
-  explosionRadius: 0
+  enemyPrefab: {fileID: 5576891758463423469}
+  cost: 2
 --- !u!114 &4815631687875623207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2603,17 +2603,17 @@ MonoBehaviour:
   lungeAttackDamage: 10
   lungeAttackChargeTime: 0.75
   lungeAttackDuration: 1.25
-  lungeAttackCD: 1
+  lungeAttackCD: 2.25
   lungeAttackRange: 4
   flurryAttackPoint: {fileID: 5329206681237499535}
   flurryAttackSize: {x: 1, y: 1, z: 1}
   flurryAttackDamage: 7.5
   flurryAttackChargeTime: 0.9
   flurryAttackDuration: 1.6
-  flurryAttackCD: 1
+  flurryAttackCD: 2.6
   flurryAttackRange: 2
   shouldIntercept: 1
-  MovementPredictionThreshold: 0.1
+  MovementPredictionThreshold: 1
   MovementPredictionTime: 2
   rotationSpeed: 3
 --- !u!195 &19660142240775866

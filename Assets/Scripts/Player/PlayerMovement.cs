@@ -56,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
                 historicalVelocities.Dequeue();
             }
 
-            historicalVelocities.Enqueue(currentVelocity * 2);
+            historicalVelocities.Enqueue(currentVelocity);
             lastPositionTime = Time.time;
         }
 

@@ -186,6 +186,9 @@ public class SkeletonAI : MonoBehaviour
         // Start recovery of the attack, after the attackduration
         Invoke(nameof(StartRecovery), attackDuration);
 
+        // Reset attack CD
+        StartCoroutine(AttackReset());
+
         // Reset to the default rotation speed 
         rotationSpeed /= rotationModifier;
     }
@@ -202,7 +205,6 @@ public class SkeletonAI : MonoBehaviour
     private void StartRecovery()
     {
         currentState = EnemyState.Chasing;
-        StartCoroutine(AttackReset());
     }
 
     private void DealDamage()

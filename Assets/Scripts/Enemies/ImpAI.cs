@@ -178,6 +178,9 @@ public class ImpAI : MonoBehaviour
 
         // Start recovery of the attack, after the attackduration
         Invoke(nameof(StartRecovery), attackDuration);
+
+        // Reset attack CD
+        StartCoroutine(AttackReset());
     }
 
     private IEnumerator AttackReset()
@@ -192,7 +195,6 @@ public class ImpAI : MonoBehaviour
     private void StartRecovery()
     {
         currentState = EnemyState.Retreating;
-        StartCoroutine(AttackReset());
     }
 
     private void ShootProjectile()
@@ -221,7 +223,7 @@ public class ImpAI : MonoBehaviour
         {
             isRetreating = true;
             bool validPositionFound = false;
-            int maxAttempts = 10; 
+            int maxAttempts = 30; 
             Vector3 potentialRetreatPosition = Vector3.zero;
             NavMeshHit hit;
 

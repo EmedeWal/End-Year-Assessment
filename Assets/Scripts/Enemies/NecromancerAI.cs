@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UIElements;
 
 public class NecromancerAI : MonoBehaviour
 {
@@ -89,7 +90,7 @@ public class NecromancerAI : MonoBehaviour
     [Header("Teleporting")]
     [SerializeField] private GameObject teleportVFX;
     [SerializeField] private float teleportCD;
-    private float teleportDistance;
+    [SerializeField] private float minTeleportDistance;
     private Vector3 teleportTargetPosition;
     private bool canTeleport = true;
 
@@ -244,6 +245,9 @@ public class NecromancerAI : MonoBehaviour
 
         // Start recovery of the attack, after the attackduration
         Invoke(nameof(MeleeRecovery), meleeDuration);
+
+        // Reset attack CD
+        StartCoroutine(MeleeReset());
     }
 
     private IEnumerator MeleeReset()
@@ -259,7 +263,6 @@ public class NecromancerAI : MonoBehaviour
     {
         // After every melee attack, the enemy teleport away, if the teleport is off cooldown
         currentState = EnemyState.Teleporting;
-        StartCoroutine(MeleeReset());
     }
 
     private void CastMelee()
@@ -314,18 +317,19 @@ public class NecromancerAI : MonoBehaviour
 
         // Start additional behavior after the spell has ended
         Invoke(nameof(SpellRecovery), spellDuration);
+
+        // The enemy can cast spells again after the cooldown
+        StartCoroutine(SpellReset());
     }
 
-    private void SpellReset()
+    private IEnumerator SpellReset()
     {
+        yield return new WaitForSeconds(spellCD);
         canCast = true;
     }
 
     private void SpellRecovery()
     {
-        // The enemy can cast spells again after the cooldown
-        Invoke(nameof(SpellReset), spellCD);
-
         // The spell was done charging, stop the audio
         audioSource.Stop();
 
@@ -392,7 +396,7 @@ public class NecromancerAI : MonoBehaviour
         }
 
         // The teleport distance should be equal to the enemy's range, so he can immediately attack again
-        teleportDistance = spellRange;
+        minTeleportDistance = spellRange;
     }
 
     #endregion
@@ -411,17 +415,24 @@ public class NecromancerAI : MonoBehaviour
 
             canTeleport = false;
             bool validPositionFound = false;
-            int maxAttempts = 10;
+            int maxAttempts = 50;
             Vector3 potentialRetreatPosition = Vector3.zero;
             NavMeshHit hit;
 
             for (int i = 0; i < maxAttempts && !validPositionFound; i++)
             {
-                // Try to find a valid retreat position not close to walls
-                Vector3 retreatDirection = (transform.position - player.position).normalized + Random.insideUnitSphere * 0.3f; // Add randomness to avoid patterns
-                potentialRetreatPosition = transform.position + retreatDirection.normalized * teleportDistance;
+                // Find a valid retreat position not close to walls
+                Vector3 randomDirection = Random.insideUnitSphere;
+                randomDirection.y = 0;
+                potentialRetreatPosition = transform.position + randomDirection.normalized * spellRange;
 
-                if (NavMesh.SamplePosition(potentialRetreatPosition, out hit, teleportDistance, NavMesh.AllAreas))
+                // Ensure this potential position is at least the minimum teleport distance
+                if ((potentialRetreatPosition - transform.position).magnitude < minTeleportDistance)
+                {
+                    continue; // Skip this iteration if the position is too close
+                }
+
+                if (NavMesh.SamplePosition(potentialRetreatPosition, out hit, spellRange, NavMesh.AllAreas))
                 {
                     // Check for walls with a BoxCast
                     Collider[] colliders = Physics.OverlapBox(hit.position, new Vector3(1f, 1f, 1f), Quaternion.identity, LayerMask.GetMask("Terrain"));
@@ -437,15 +448,11 @@ public class NecromancerAI : MonoBehaviour
 
                         // Start chase
                         StartChase();
+                        break;
                     }
                 }
             }
 
-            if (!validPositionFound)
-            {
-                // No valid positions found. Start chase
-                StartChase();
-            }
         }
         else
         {
@@ -495,9 +502,12 @@ public class NecromancerAI : MonoBehaviour
 
     public void Stagger()
     {
-        // Reset the enemy's attack CD, but make sure to reset it again later
+        // Stop and reset all coroutines
         StopAllCoroutines();
         StartCoroutine(MeleeReset());
+        StartCoroutine(SpellReset());
+
+        canMelee = false;
         canCast = false;
 
         // Animation
@@ -506,11 +516,13 @@ public class NecromancerAI : MonoBehaviour
         // If the enemy is interrupted while charing his attack, execute the following the code
         if (currentState == EnemyState.Charging)
         {
-            // Cancel the attack start
+            // Cancel the start of the attacks
             CancelInvoke(nameof(MeleeStart));
+            CancelInvoke(nameof(SpellStart));
 
             // Start recovery of the attack, after the attackduration
             Invoke(nameof(MeleeRecovery), spellDuration);
+            Invoke(nameof(SpellRecovery), spellDuration);
         }
 
         // If the enemy is hit while moving, stop him in his tracks
