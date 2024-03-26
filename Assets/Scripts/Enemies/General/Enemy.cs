@@ -66,7 +66,7 @@ public class Enemy : MonoBehaviour
         if (isImp)
         {
             // If so, spawn the explosion prefab. This explosion damages enemies
-            GameObject explosion = Instantiate(explosionPrefab, spawner.transform);
+            GameObject explosion = Instantiate(explosionPrefab, transform.position, transform.rotation);
             explosion.GetComponent<Explosion>().damagesEnemies = true;
         }
 
